@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Entornos
+.env
+.venv/
+venv/
+
+# Django / logs
+*.log
+db.sqlite3
+
+# IDEs
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Backups
+backups/
+
+# Archivos temporales
+*.swp
+*.swo

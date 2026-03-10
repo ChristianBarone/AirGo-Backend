@@ -1,0 +1,2 @@
+-- Inicialización futura de base de datos.
+-- De momento lo dejamos preparado.
