@@ -13,5 +13,6 @@ def verify_google_token(token):
 
     return {
         "email": idinfo["email"],
-        "name": idinfo.get("name", "")
+        "name": idinfo.get("name", ""),
+        "picture": idinfo.get("picture", "")
     }

@@ -26,6 +26,12 @@ class GoogleLoginView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
 
+        if not idinfo.get("email_verified", False):
+            return Response(
+                {"error": "Email not verified"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         token = serializer.validated_data["token"]
 
         try:
@@ -37,6 +43,7 @@ class GoogleLoginView(APIView):
 
             email = idinfo["email"]
             name = idinfo.get("name", "")
+            picture = idinfo.get("picture")
 
             user, created = User.objects.get_or_create(
                 username=email,
@@ -50,6 +57,7 @@ class GoogleLoginView(APIView):
 
             return Response({
                 "user": email,
+                "picture": picture,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh)
             })
