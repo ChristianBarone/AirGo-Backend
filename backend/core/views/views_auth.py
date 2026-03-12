@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from ..serializers import GoogleAuthSerializer
 
 
-GOOGLE_CLIENT_ID = "500956123135-fidfq8ecmd60e6pak1e4ds5r1ai9sojp.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = "CLIENT_ID"
 
 
 class GoogleLoginView(APIView):
