@@ -1,7 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 from rest_framework import viewsets
-from .models import Route
-from .serializers import RouteSerializer
+from ..models import Route
+from ..serializers import RouteSerializer
 
 def home(request):
     return HttpResponse("AirGo backend operativo")
