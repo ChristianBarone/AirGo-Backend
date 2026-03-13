@@ -1,3 +1,5 @@
+import os
+
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
@@ -9,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..serializers import GoogleAuthSerializer
 
-GOOGLE_CLIENT_ID = "278712094443-2fl5uln8283bmf5ca83ou3eke9r2bu1t.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 
 class GoogleLoginView(APIView):
