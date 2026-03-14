@@ -1,3 +1,5 @@
+import os
+
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
@@ -5,32 +7,21 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..serializers import GoogleAuthSerializer
 
-
-GOOGLE_CLIENT_ID = "CLIENT_ID"
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
 
 class GoogleLoginView(APIView):
 
-    ## Verificación de la request con Google
-    # Generación del usuario si no existe, login si ya existe (avisar si no quereis que el default sea "name")
-    # Gestión de errores con el token
     def post(self, request):
 
         serializer = GoogleAuthSerializer(data=request.data)
 
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
-
-        if not idinfo.get("email_verified", False):
-            return Response(
-                {"error": "Email not verified"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
         token = serializer.validated_data["token"]
 
@@ -40,6 +31,13 @@ class GoogleLoginView(APIView):
                 requests.Request(),
                 GOOGLE_CLIENT_ID
             )
+
+            # ✅ Ahora idinfo ya existe cuando hacemos el check
+            if not idinfo.get("email_verified", False):
+                return Response(
+                    {"error": "Email not verified"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
             email = idinfo["email"]
             name = idinfo.get("name", "")
@@ -62,8 +60,13 @@ class GoogleLoginView(APIView):
                 "refresh": str(refresh)
             })
 
-        except ValueError:
+
+        except ValueError as e:
+
             return Response(
-                {"error": "Invalid Google token"},
+
+                {"error": "Invalid Google token", "detail": str(e)},
+
                 status=status.HTTP_400_BAD_REQUEST
+
             )
