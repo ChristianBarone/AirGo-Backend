@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -10,6 +10,9 @@ from ..serializers import UsuariSerializer
 class UsuariViewSet(viewsets.ModelViewSet):
     queryset = Usuari.objects.all()
     serializer_class = UsuariSerializer
+    # Endpoint Buscar perfil: GET /api/usuaris/?search='username'
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
 
     @action(
         detail=False,
@@ -25,3 +28,14 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(user)
         return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["delete"],
+        permission_classes=[IsAuthenticated],
+        url_path="me"
+    )
+    def delete_account(self, request):
+        user = request.user
+        user.delete()
+        return Response({"message": "Cuenta eliminada"})
