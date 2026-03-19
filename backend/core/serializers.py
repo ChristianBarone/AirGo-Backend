@@ -8,6 +8,8 @@ from .models import Usuari
 #       PATCH /api/usuaris/<id>/
 #  Cambio de imagen de perfil:
 #       PATCH /api/usuaris/me/profile-pic/
+#  Eliminar usuario:
+#       DELETE /api/usuaris/me/
 class UsuariSerializer(serializers.ModelSerializer):
     # Username válido si tiene 4 o + caracteres
     def validate_username(self, value):
