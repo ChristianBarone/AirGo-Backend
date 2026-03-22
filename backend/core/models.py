@@ -9,7 +9,7 @@ class Idioma(models.TextChoices):
     ENG = "ENG", "English"
 
 class Usuari(models.Model):
-    username = models.CharField(max_length=25, unique=True)
+    username = models.CharField(max_length=255, unique=True)
     punts = models.IntegerField()
     profile_pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
     def __str__(self):
