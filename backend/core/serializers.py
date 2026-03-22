@@ -9,9 +9,6 @@ class UsuariSerializer(serializers.ModelSerializer):
     def get_profile_pic(self, obj):
         if not obj.profile_pic:
             return None
-        request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(obj.profile_pic.url)
         base_url = os.environ.get("BASE_URL", "http://nattech.fib.upc.edu:40330")
         return f"{base_url}{obj.profile_pic.url}"
 
