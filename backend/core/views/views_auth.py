@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from ..serializers import GoogleAuthSerializer
+from ..models import Usuari
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 
@@ -32,7 +33,6 @@ class GoogleLoginView(APIView):
                 GOOGLE_CLIENT_ID
             )
 
-            # ✅ Ahora idinfo ya existe cuando hacemos el check
             if not idinfo.get("email_verified", False):
                 return Response(
                     {"error": "Email not verified"},
@@ -51,6 +51,19 @@ class GoogleLoginView(APIView):
                 }
             )
 
+            Usuari.objects.get_or_create(
+                username=email,
+                defaults={
+                    "punts": 0,
+                    "teBici": False,
+                    "pes": 0.0,
+                    "altura": 0.0,
+                    "ratxa": 0,
+                    "limitRutes": 0,
+                    "titol": "",
+                }
+            )
+
             refresh = RefreshToken.for_user(user)
 
             return Response({
@@ -60,13 +73,8 @@ class GoogleLoginView(APIView):
                 "refresh": str(refresh)
             })
 
-
         except ValueError as e:
-
             return Response(
-
                 {"error": "Invalid Google token", "detail": str(e)},
-
                 status=status.HTTP_400_BAD_REQUEST
-
             )
