@@ -3,14 +3,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 from ..models import Usuari
 from ..serializers import UsuariSerializer
 
-## View perfil de usuario
 class UsuariViewSet(viewsets.ModelViewSet):
     queryset = Usuari.objects.all()
     serializer_class = UsuariSerializer
-    # Endpoint Buscar perfil: GET /api/usuaris/?search='username'
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
 
@@ -22,11 +21,15 @@ class UsuariViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def change_profile_pic(self, request):
-        user = request.user
-        user.profile_pic = request.data.get("profile_pic")
-        user.save()
+        try:
+            usuari = Usuari.objects.get(username=request.user.email)
+        except Usuari.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = self.get_serializer(user)
+        usuari.profile_pic = request.data.get("profile_pic")
+        usuari.save()
+
+        serializer = self.get_serializer(usuari)
         return Response(serializer.data)
 
     @action(
@@ -36,6 +39,11 @@ class UsuariViewSet(viewsets.ModelViewSet):
         url_path="me"
     )
     def delete_account(self, request):
-        user = request.user
-        user.delete()
-        return Response({"message": "Cuenta eliminada"})
+        try:
+            usuari = Usuari.objects.get(username=request.user.email)
+        except Usuari.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        usuari.delete()
+        request.user.delete()
+        return Response({"message": "Cuenta eliminada"}, status=status.HTTP_204_NO_CONTENT)
