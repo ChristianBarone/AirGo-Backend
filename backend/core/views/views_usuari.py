@@ -46,4 +46,4 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
         usuari.delete()
         request.user.delete()
-        return Response({"message": "Cuenta eliminada"}, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
