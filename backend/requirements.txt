@@ -5,3 +5,7 @@ python-dotenv>=1.0
 google-auth
 djangorestframework-simplejwt
 requests
+Pillow>=10.0.0
+pytest
+pytest-django
+pytest-cov
