@@ -12,5 +12,5 @@ Después se implementará un script para leer datos automáticamente.
 
 3) Ejecutar: java -jar web/target/graphhopper-web-12.0-SNAPSHOT.jar server config.yml
 
-4) Ir al servidor y probar motor (una vez esté andando): http://localhost:8080/route
+4) Ir al servidor y probar motor una vez esté andando (perfil bici): http://localhost:8080/maps/?profile=eco_bike&layer=OpenStreetMap
 
