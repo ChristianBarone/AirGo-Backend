@@ -1,28 +1,75 @@
+import requests
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..services.air_quality import get_air_quality_near
 from ..services.navigation import get_eco_route
 
 
-class EcoRouteView(APIView):
-    def post(self, request):
-        # Esperamos lat_start, lon_start, lat_end, lon_end
-        data = request.data
+def get_eco_route(start_coords, end_coords, stations):
+    gh_url = "http://localhost:8080/route"
 
-        try:
-            start = {"lat": float(data["lat_start"]), "lon": float(data["lon_start"])}
-            end = {"lat": float(data["lat_end"]), "lon": float(data["lon_end"])}
-        except (KeyError, ValueError):
-            return Response({"error": "Faltan coordenadas de inicio o fin"}, status=400)
+    # 1. Crear la lista de Features (Polígonos)
+    features_list = []
+    priority_rules = []
 
-        # 1. Obtener contaminación actual en la zona (radio 20km para pillar sensores)
-        stations = get_air_quality_near(start["lat"], start["lon"], radio_km=20)
+    for i, station in enumerate(stations):
+        area_id = f"station_{i}"
+        lat = station["geoPoint"]["lat"]
+        lon = station["geoPoint"]["lon"]
+        aqi = station["aqi"]
 
-        # 2. Pedir a GraphHopper la ruta esquivando esas estaciones
-        route_data = get_eco_route(start, end, stations)
+        # Definir el polígono (cuadrado de influencia)
+        d = 0.004
+        polygon_coords = [[
+            [lon - d, lat - d], [lon + d, lat - d],
+            [lon + d, lat + d], [lon - d, lat + d],
+            [lon - d, lat - d]
+        ]]
 
-        return Response({
-            "status": "success",
-            "aqi_stations_used": len(stations),
-            "route": route_data
-        })
+        # objeto feature GeoJSON
+        feature = {
+            "type": "Feature",
+            "id": area_id,
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": polygon_coords
+            },
+            "properties": {
+                "aqi_value": aqi,
+                "name": station.get("zone", "sensor")
+            }
+        }
+        features_list.append(feature)
+
+        # Regla de prioridad basada en el ID del Feature
+        if aqi > 100:
+            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.05"})
+        elif aqi > 50:
+            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.4"})
+
+    # 2. Configurar el Payload con el Custom Model correcto
+    payload = {
+        "points": [
+            [start_coords['lon'], start_coords['lat']],
+            [end_coords['lon'], end_coords['lat']]
+        ],
+        "profile": "eco_bike",
+        "ch.disable": True,
+        "points_encoded": False,
+        "details": ["pollution", "average_speed", "time", "distance"], # Pide todos los detalles
+        "custom_model": {
+            "priority": priority_rules,
+            "areas": {
+                "type": "FeatureCollection",
+                "features": features_list # <--- Aquí va la lista que creamos
+            }
+        }
+    }
+
+    try:
+        # Usamos POST porque el JSON del custom_model puede ser muy grande
+        response = requests.post(gh_url, json=payload)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Error en GraphHopper: {str(e)}"}
