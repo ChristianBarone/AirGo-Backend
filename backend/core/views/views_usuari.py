@@ -47,3 +47,21 @@ class UsuariViewSet(viewsets.ModelViewSet):
         usuari.delete()
         request.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        permission_classes=[IsAuthenticated],
+        url_path="me/profile",
+        url_name = "me-profile"
+    )
+    def retrieve_profile(self, request):
+        try:
+            # Obtener el 'Usuari' basado en el correo electrónico del usuario autenticado
+            usuari = Usuari.objects.get(username=request.user.email)
+        except Usuari.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        # Serializar la información y devolverla
+        serializer = self.get_serializer(usuari)
+        return Response(serializer.data)
