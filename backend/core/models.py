@@ -37,6 +37,31 @@ class Usuari(models.Model):
 
         super().save(*args, **kwargs)
 
+class BicingEstacio(models.Model):
+    station_id = models.IntegerField(unique=True)
+    name = models.CharField(max_length=200)
+    lat = models.FloatField()
+    lon = models.FloatField()
+    capacity = models.IntegerField()
+    bikes_available = models.IntegerField()
+    docks_available = models.IntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+
+class AirQualityHistoric(models.Model):
+    lat = models.FloatField()
+    lon = models.FloatField()
+    aqi = models.FloatField()
+    day_of_week = models.IntegerField()  # 0=lunes, 6=domingo
+    hora = models.IntegerField()         # 8 o 18 por ejemplo
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Una entrada por ubicació, día y hora
+        unique_together = ['lat', 'lon', 'day_of_week', 'hora']
 
 class Route(models.Model):
     name = models.CharField(max_length=100)
