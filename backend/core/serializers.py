@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Route
-from .models import Usuari
+from .models import Route, Usuari, Titol, UsuariTitol
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -36,3 +35,17 @@ class RouteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Route
         fields = '__all__'
+
+
+class TitolSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Titol
+        fields = ['id', 'nom', 'descripcio']
+
+
+class UsuariTitolSerializer(serializers.ModelSerializer):
+    titol = TitolSerializer(read_only=True)
+
+    class Meta:
+        model = UsuariTitol
+        fields = ['titol']

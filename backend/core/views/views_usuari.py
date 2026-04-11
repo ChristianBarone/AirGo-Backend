@@ -4,14 +4,31 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from ..models import Usuari
-from ..serializers import UsuariSerializer
+from ..models import Usuari, UsuariTitol
+from ..serializers import UsuariSerializer, UsuariTitolSerializer
+
 
 class UsuariViewSet(viewsets.ModelViewSet):
     queryset = Usuari.objects.all()
     serializer_class = UsuariSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="titols",
+        url_name="titols"
+    )
+    def get_titols(self, request, pk=None):
+        try:
+            usuari = Usuari.objects.get(pk=pk)
+        except Usuari.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        titols = UsuariTitol.objects.filter(usuari=usuari).select_related('titol')
+        serializer = UsuariTitolSerializer(titols, many=True)
+        return Response(serializer.data)
 
     @action(
         detail=False,
@@ -28,7 +45,6 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
         usuari.profile_pic = request.data.get("profile_pic")
         usuari.save()
-
         serializer = self.get_serializer(usuari)
         return Response(serializer.data)
 
@@ -53,7 +69,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
         methods=["get"],
         permission_classes=[IsAuthenticated],
         url_path="me/profile",
-        url_name = "me-profile"
+        url_name="me-profile"
     )
     def retrieve_profile(self, request):
         try:
