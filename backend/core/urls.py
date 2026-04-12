@@ -12,7 +12,7 @@ from django.conf.urls.static import static
 # Crea un router para registrar las vistas de la API
 router = DefaultRouter()
 router.register(r'routes', RouteViewSet)  # Registra la vista de rutas
-router.register(r'usuaris', UsuariViewSet)
+router.register(r'usuaris', UsuariViewSet)  # Registra el viewset de Usuari
 
 urlpatterns = [
     path("", home, name="home"),
