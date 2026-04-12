@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from ..serializers import GoogleAuthSerializer
 from ..models import Usuari
 
@@ -43,6 +42,7 @@ class GoogleLoginView(APIView):
             email = idinfo["email"]
             name = idinfo.get("name", "")
             picture = idinfo.get("picture")
+            google_id = idinfo["sub"]  # <-- guardar el google_id
 
             user, created = User.objects.get_or_create(
                 username=email,
@@ -52,8 +52,8 @@ class GoogleLoginView(APIView):
                 }
             )
 
-            Usuari.objects.get_or_create(
-                google_id=idinfo["sub"],  #pasamos de buscar por username a buscar por id de google para evitar el bug del id
+            usuari, _ = Usuari.objects.get_or_create(  # <-- guardar el objeto usuari
+                google_id=google_id,
                 defaults={
                     "username": email,
                     "punts": 0,
@@ -67,9 +67,11 @@ class GoogleLoginView(APIView):
             )
 
             refresh = RefreshToken.for_user(user)
+            refresh['google_id'] = usuari.google_id  # <-- meter google_id en el token
 
             return Response({
                 "user": email,
+                "usuari_id": usuari.id,             # <-- devolver el id también
                 "picture": picture,
                 "access": str(refresh.access_token),
                 "refresh": str(refresh)

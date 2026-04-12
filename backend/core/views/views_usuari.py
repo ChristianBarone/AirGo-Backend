@@ -30,6 +30,11 @@ class UsuariViewSet(viewsets.ModelViewSet):
         serializer = UsuariTitolSerializer(titols, many=True)
         return Response(serializer.data)
 
+    # Helper privado para no repetir la lógica en cada vista
+    def _get_usuari_from_token(self, request):
+        google_id = request.auth.get('google_id')  # <-- leer del token
+        return Usuari.objects.get(google_id=google_id)
+
     @action(
         detail=False,
         methods=["patch"],
@@ -39,7 +44,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
     )
     def change_profile_pic(self, request):
         try:
-            usuari = Usuari.objects.get(username=request.user.email)
+            usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -56,7 +61,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
     )
     def delete_account(self, request):
         try:
-            usuari = Usuari.objects.get(username=request.user.email)
+            usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -73,11 +78,9 @@ class UsuariViewSet(viewsets.ModelViewSet):
     )
     def retrieve_profile(self, request):
         try:
-            # Obtener el 'Usuari' basado en el correo electrónico del usuario autenticado
-            usuari = Usuari.objects.get(username=request.user.email)
+            usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=404)
 
-        # Serializar la información y devolverla
         serializer = self.get_serializer(usuari)
         return Response(serializer.data)
