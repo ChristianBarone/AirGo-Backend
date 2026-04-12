@@ -53,8 +53,9 @@ class GoogleLoginView(APIView):
             )
 
             Usuari.objects.get_or_create(
-                username=email,
+                google_id=idinfo["sub"],  #pasamos de buscar por username a buscar por id de google para evitar el bug del id
                 defaults={
+                    "username": email,
                     "punts": 0,
                     "teBici": False,
                     "pes": 0.0,

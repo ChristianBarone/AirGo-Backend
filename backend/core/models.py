@@ -7,6 +7,7 @@ class Idioma(models.TextChoices):
     ENG = "ENG", "English"
 
 class Usuari(models.Model):
+    google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
     punts = models.IntegerField()
     profile_pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
