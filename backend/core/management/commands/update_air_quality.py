@@ -30,15 +30,23 @@ class Command(BaseCommand):
 
         for punto in puntos:
             try:
-                data = get_air_quality_near(punto["lat"], punto["lon"])
-                AirQualityHistoric.objects.update_or_create(
-                    lat=punto["lat"],
-                    lon=punto["lon"],
-                    day_of_week=day_of_week,
-                    hora=hora,
-                    defaults={"aqi": data["aqi"]}
-                )
+                estacions_properes = get_air_quality_near(punto["lat"], punto["lon"])
+                if estacions_properes:
+                    # Busquem el pitjor AQI d'entre totes les estacions properes al punt
+                    aqi_maxim = max(estacio["aqi"] for estacio in estacions_properes)
+
+                    AirQualityHistoric.objects.update_or_create(
+                        lat=punto["lat"],
+                        lon=punto["lon"],
+                        day_of_week=day_of_week,
+                        hora=hora,
+                        defaults={"aqi": aqi_maxim}  # Ara sí, li passem un número!
+                    )
+                    self.stdout.write(f"Punt {punto['lat']}, {punto['lon']} guardat amb AQI: {aqi_maxim}")
+                else:
+                    self.stdout.write(f"No hi ha estacions a prop del punt {punto['lat']}, {punto['lon']}")
+
             except Exception as e:
                 self.stdout.write(f"Error en {punto}: {e}")
 
-        self.stdout.write(f"Aire actualizado - día {day_of_week} hora {hora}")
+            self.stdout.write(self.style.SUCCESS(f"Aire actualizado - día {day_of_week} hora {hora}"))

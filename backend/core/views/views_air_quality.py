@@ -13,7 +13,7 @@ def get_eco_route(start_coords, end_coords, stations):
     priority_rules = []
 
     for i, station in enumerate(stations):
-        area_id = f"station_{i}"
+        area_id = f"s{i}"
         lat = station["geoPoint"]["lat"]
         lon = station["geoPoint"]["lon"]
         aqi = station["aqi"]
