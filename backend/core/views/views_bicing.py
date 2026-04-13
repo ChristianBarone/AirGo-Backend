@@ -15,10 +15,9 @@ class BicingView(APIView):
         except ValueError:
             return Response({"error": "lat, lon y radio deben ser números"}, status=400)
 
-        try:
-            data = get_bicing_near(lat, lon, radio_km=radio)
-        except Exception:
-            # API caída, usamos el histórico de la BD
+        data = get_bicing_near(lat, lon, radio_km=radio)
+
+        if not data:  # API caída o sin resultados → tiramos de BD
             data = list(BicingEstacio.objects.values())
 
         return Response(data)

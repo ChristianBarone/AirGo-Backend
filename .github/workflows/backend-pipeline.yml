@@ -78,4 +78,5 @@ jobs:
 
       - name: Run Migrations
         run: |
+          docker exec airgo_backend python manage.py makemigrations
           docker exec airgo_backend python manage.py migrate
