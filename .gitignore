@@ -36,7 +36,3 @@ target/
 # GraphHopper Data
 graph-cache/
 *.poly
-
-# Configuración local GraphHopper
-config.yml
-pollution.json

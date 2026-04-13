@@ -1,0 +1,43 @@
+graphhopper:
+  datareader.file: "cataluna-260317.osm.pbf"
+  graph.location: /data/graph-cache
+
+  import.osm.ignored_highways: motorway,trunk
+
+  profiles:
+    - name: eco_bike
+      custom_model_files: [eco_bike_custom_model.json]
+    - name: eco_foot
+      custom_model_files: [eco_foot_custom_model.json]
+
+  profiles_ch: []
+  profiles_lm: []
+
+  graph.encoded_values: car_access, car_average_speed, country, road_class, roundabout, max_speed, foot_access, foot_average_speed, foot_priority, foot_road_access, bike_access, bike_average_speed, bike_priority, bike_road_access, bike_network, mtb_rating, ferry_speed, road_environment
+
+  custom_models.directory: /data/custom_models
+
+  prepare.min_network_size: 200
+  prepare.subnetworks.threads: 1
+  routing.non_ch.max_waypoint_distance: 1000000
+  routing.snap_preventions_default: tunnel, bridge, ferry
+  graph.dataaccess.default_type: RAM_STORE
+
+server:
+  application_connectors:
+  - type: http
+    port: 8989
+    bind_host: 0.0.0.0
+    max_request_header_size: 50k
+  request_log:
+    appenders: []
+  admin_connectors:
+  - type: http
+    port: 8990
+    bind_host: 0.0.0.0
+
+logging:
+  appenders:
+    - type: console
+      time_zone: UTC
+      log_format: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
