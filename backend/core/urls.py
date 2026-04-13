@@ -19,7 +19,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view()),
-    path("air-quality/", EcoRouteView.as_view(), name="air-quality"),
+    path("route-generation/", EcoRouteView.as_view(), name="air-quality"),
     path("bicing/", BicingView.as_view(), name="bicing"),
     path("api/", include(router.urls)),  # Agrega las rutas de la API aquí
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
