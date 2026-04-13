@@ -35,7 +35,6 @@ target/
 
 # GraphHopper Data
 graph-cache/
-*.osm.pbf
 *.poly
 
 # Configuración local GraphHopper
