@@ -6,6 +6,11 @@ class Idioma(models.TextChoices):
     ES = "ES", "Español"
     ENG = "ENG", "English"
 
+class TExercici(models.TextChoices):
+    CAMINAR = "CAM", "Caminar"
+    BICI = "BIC", "Bici"
+    ALTRES = "ALT", "Altres"
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -88,3 +93,22 @@ class Route(models.Model):
 
     def __str__(self):
         return self.name
+
+class Exercici(models.Model):
+    dataInici = models.DateTimeField(auto_now_add=True)
+    dataFi = models.DateTimeField(null=True, blank=True) # Mejor permitir nulo hasta que termine
+    completat = models.BooleanField(default=False)
+    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
+
+class ExerciciExterior(Exercici):
+    dist_feta_km = models.FloatField()
+    calories = models.FloatField()
+
+class ExerciciRuta(ExerciciExterior):
+    dist_objectiu_km = models.FloatField()
+
+class TemplateExercici(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.TextField(blank=True)
+    # Cambiar default si hace falta
+    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
