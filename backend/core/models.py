@@ -88,3 +88,7 @@ class Route(models.Model):
 
     def __str__(self):
         return self.name
+
+class PlaEntrenament(models.Model):
+    diesDurada = models.IntegerField()
+    numEntrenamentsSetmanals = models.IntegerField()

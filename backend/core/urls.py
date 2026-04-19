@@ -7,12 +7,14 @@ from .views.route_pollution_view import EcoRouteView
 from .views.views_air_quality import AirQualityView
 from .views import RouteViewSet
 from .views.views_bicing import BicingView
+from .views.views_pla_entrenament import PlaEntrenamentViewset
 from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'routes', RouteViewSet)
 router.register(r'usuaris', UsuariViewSet)
+router.register(r'pla-entrenament', PlaEntrenamentViewset)
 
 urlpatterns = [
     path("", home, name="home"),
