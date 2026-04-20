@@ -44,6 +44,20 @@ services:
     networks:
       - airgo_net
 
+  graphhopper:
+    image: israelhikingmap/graphhopper:latest
+    container_name: airgo_graphhopper
+    restart: unless-stopped
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m
+    volumes:
+    - ./graphhopper/osm:/data
+    ports:
+      - "8989:8989"
+    networks:
+      - airgo_net
+    command: --input /data/cataluna-260317.osm.pbf --config /data/config.yml
+
 volumes:
   postgres_data:
 

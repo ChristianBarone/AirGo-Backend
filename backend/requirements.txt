@@ -5,6 +5,7 @@ python-dotenv>=1.0
 google-auth
 djangorestframework-simplejwt
 requests
+django-cors-headers
 Pillow>=10.0.0
 pytest
 pytest-django

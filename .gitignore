@@ -16,6 +16,7 @@ db.sqlite3
 # IDEs
 .idea/
 .vscode/
+*.iml
 
 # OS
 .DS_Store
@@ -26,3 +27,12 @@ backups/
 # Archivos temporales
 *.swp
 *.swo
+
+# Java / Maven
+target/
+*.class
+.mtj.tmp/
+
+# GraphHopper Data
+graph-cache/
+*.poly
