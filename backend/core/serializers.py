@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Route, Usuari, Titol, UsuariTitol
 import os
 
+
 class UsuariSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()
 
@@ -24,7 +25,7 @@ class UsuariSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Usuari
-        fields = '__all__'
+        fields = "__all__"
 
 
 class GoogleAuthSerializer(serializers.Serializer):
@@ -34,13 +35,13 @@ class GoogleAuthSerializer(serializers.Serializer):
 class RouteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Route
-        fields = '__all__'
+        fields = "__all__"
 
 
 class TitolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Titol
-        fields = ['id', 'nom', 'descripcio']
+        fields = ["id", "nom", "descripcio"]
 
 
 class UsuariTitolSerializer(serializers.ModelSerializer):
@@ -48,4 +49,4 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsuariTitol
-        fields = ['titol']
+        fields = ["titol"]
