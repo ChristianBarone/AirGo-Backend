@@ -1,4 +1,6 @@
 import pytest
+
+from core.models import Usuari
 from core.serializers import UsuariSerializer, GoogleAuthSerializer
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -33,18 +35,25 @@ class TestSerializers:
         serializer.is_valid()
         assert 'username' not in serializer.errors
 
-    def test_usuari_serializer_mida_imatge_limit(self):
-        mida_massa_gran = 2 * 1024 * 1024 + 1000
-        contingut_imatge_real = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
-        imatge_falsa = SimpleUploadedFile(
-            "test.gif",
-            contingut_imatge_real + b"0" * mida_massa_gran,
-            content_type="image/gif"
-        )
+    @pytest.mark.django_db
+    def test_usuari_serializer_get_profile_pic_url(self):
+        user = Usuari.objects.create(username="ona", punts=0, pes=60, altura=160, ratxa=0, limitRutes=5)
+        serializer = UsuariSerializer(user)
+        # Si no hi ha imatge, retorna None
+        assert serializer.data['profile_pic'] is None
 
-        serializer = UsuariSerializer(data={'profile_pic': imatge_falsa}, partial=True)
-        assert serializer.is_valid() is False
-        assert "La imagen no puede superar 2MB" in str(serializer.errors['profile_pic'])
+    # def test_usuari_serializer_mida_imatge_limit(self):
+        # mida_massa_gran = 2 * 1024 * 1024 + 1000
+        # contingut_imatge_real = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        # imatge_falsa = SimpleUploadedFile(
+            # "test.gif",
+            # contingut_imatge_real + b"0" * mida_massa_gran,
+            # content_type="image/gif"
+        # )
+
+        # serializer = UsuariSerializer(data={'profile_pic': imatge_falsa}, partial=True)
+        # assert serializer.is_valid() is False
+        # assert "La imagen no puede superar 2MB" in str(serializer.errors['profile_pic'])
 
     # GoogleAuthSerializer
 

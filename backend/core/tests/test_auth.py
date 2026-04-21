@@ -20,7 +20,8 @@ class TestGoogleAuthAPI:
             'email': 'sportakus@gmail.com',
             'name': 'Sportakus',
             'picture': 'http://imatge.com/foto.jpg',
-            'email_verified': True
+            'email_verified': True,
+            'sub': '1234567890'
         }
 
         response = self.client.post(self.url, {'token': 'token_de_mentida'}, format='json')
