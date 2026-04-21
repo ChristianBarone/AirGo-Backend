@@ -32,14 +32,23 @@ urlpatterns = [
     path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
     path("bicing/", BicingView.as_view(), name="bicing"),
-
     path("api/usuaris/me/routes/save/", usuari_save_route, name="usuari-save-route"),
     path("api/usuaris/me/routes/", usuari_get_routes, name="usuari-get-routes"),
-    path("api/usuaris/me/routes/<int:route_id>/", usuari_delete_route, name="usuari-delete-route"),
-
+    path(
+        "api/usuaris/me/routes/<int:route_id>/",
+        usuari_delete_route,
+        name="usuari-delete-route",
+    ),
     path("api/", include(router.urls)),
-
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(url_name="api-schema"), name="api-docs"),
-    path("api/redoc/", SpectacularRedocView.as_view(url_name="api-schema"), name="api-redoc"),
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="api-schema"),
+        name="api-docs",
+    ),
+    path(
+        "api/redoc/",
+        SpectacularRedocView.as_view(url_name="api-schema"),
+        name="api-redoc",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

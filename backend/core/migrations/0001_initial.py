@@ -7,37 +7,69 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Route',
+            name="Route",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('start_location', models.CharField(max_length=200)),
-                ('end_location', models.CharField(max_length=200)),
-                ('distance', models.FloatField()),
-                ('air_quality', models.FloatField()),
-                ('is_safe', models.BooleanField(default=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("start_location", models.CharField(max_length=200)),
+                ("end_location", models.CharField(max_length=200)),
+                ("distance", models.FloatField()),
+                ("air_quality", models.FloatField()),
+                ("is_safe", models.BooleanField(default=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Usuari',
+            name="Usuari",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('username', models.CharField(max_length=255, unique=True)),
-                ('punts', models.IntegerField()),
-                ('profile_pic', models.ImageField(blank=True, null=True, upload_to='profile_pics')),
-                ('teBici', models.BooleanField(default=False)),
-                ('pes', models.FloatField()),
-                ('altura', models.FloatField()),
-                ('ratxa', models.IntegerField()),
-                ('idioma', models.CharField(choices=[('CAT', 'Catalan'), ('ES', 'Español'), ('ENG', 'English')], default='ES', max_length=3)),
-                ('limitRutes', models.IntegerField()),
-                ('titol', models.CharField(max_length=100)),
-                ('insignies', models.ImageField(blank=True, null=True, upload_to='insignies')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("username", models.CharField(max_length=255, unique=True)),
+                ("punts", models.IntegerField()),
+                (
+                    "profile_pic",
+                    models.ImageField(blank=True, null=True, upload_to="profile_pics"),
+                ),
+                ("teBici", models.BooleanField(default=False)),
+                ("pes", models.FloatField()),
+                ("altura", models.FloatField()),
+                ("ratxa", models.IntegerField()),
+                (
+                    "idioma",
+                    models.CharField(
+                        choices=[
+                            ("CAT", "Catalan"),
+                            ("ES", "Español"),
+                            ("ENG", "English"),
+                        ],
+                        default="ES",
+                        max_length=3,
+                    ),
+                ),
+                ("limitRutes", models.IntegerField()),
+                ("titol", models.CharField(max_length=100)),
+                (
+                    "insignies",
+                    models.ImageField(blank=True, null=True, upload_to="insignies"),
+                ),
             ],
         ),
     ]
