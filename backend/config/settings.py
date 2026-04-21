@@ -10,6 +10,8 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    #Clase de esquema openApi
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 ALLOWED_HOSTS = [
@@ -26,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "drf_spectacular",
     "core",
     "corsheaders",
 ]
@@ -93,3 +96,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o for o in csrf_origins.split(",") if o]
+
+#Config visual
+SPECTACULAR_SETTINGS = {
+    "TITLE": "API AirGo",
+    "DESCRIPTION": "Documentación de la API REST del proyecto AirGo",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+
+    #mostrar JWT Bearer en Swagger
+    "COMPONENT_SPLIT_REQUEST": True,
+}
