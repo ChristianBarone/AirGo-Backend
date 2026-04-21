@@ -45,7 +45,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-## CAMBIAR PUERTO SERVIDOR FRONTEND (3000) SI ES DIFERENTE
+# CAMBIAR PUERTO SERVIDOR FRONTEND (3000) SI ES DIFERENTE
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",

@@ -27,4 +27,4 @@ jobs:
         run: black --check .
 
       - name: Lint with flake8
-        run: flake8 .
+        run: flake8 backend

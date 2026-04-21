@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import requests
 from ..services.air_quality import get_air_quality_near
 from ..services.navigation import get_eco_route
 from ..models import Route
@@ -72,7 +71,8 @@ class EcoRouteView(APIView):
         except (TypeError, ValueError, KeyError):
             return Response(
                 {
-                    "error": "Coordenadas lat_start, lon_start, lat_end, lon_end son obligatorias y deben ser números."
+                    "error": "Coordenadas lat_start, lon_start, "
+                    "lat_end, lon_end son obligatorias y deben ser números."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -109,7 +109,8 @@ class EcoRouteView(APIView):
             )
 
             route_obj = Route.objects.create(
-                name=f"{data.get('lat_start')},{data.get('lon_start')} → {data.get('lat_end')},{data.get('lon_end')}",
+                name=f"{data.get('lat_start')},{data.get('lon_start')}"
+                     f" → {data.get('lat_end')},{data.get('lon_end')}",
                 start_location=f"{start['lat']},{start['lon']}",
                 end_location=f"{end['lat']},{end['lon']}",
                 distance=distance_km,
@@ -136,7 +137,8 @@ class EcoRouteView(APIView):
                     ],
                 },
                 "pollution_details": segments_colors,
-                # Opcional: enviar las estaciones usadas para que el front las pinte como iconos
+                # Opcional: enviar las estaciones usadas
+                # para que el front las pinte como iconos
                 "stations_info": stations,
             }
 
