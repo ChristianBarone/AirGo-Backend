@@ -110,7 +110,7 @@ class EcoRouteView(APIView):
 
             route_obj = Route.objects.create(
                 name=f"{data.get('lat_start')},{data.get('lon_start')}"
-                     f" → {data.get('lat_end')},{data.get('lon_end')}",
+                f" → {data.get('lat_end')},{data.get('lon_end')}",
                 start_location=f"{start['lat']},{start['lon']}",
                 end_location=f"{end['lat']},{end['lon']}",
                 distance=distance_km,
