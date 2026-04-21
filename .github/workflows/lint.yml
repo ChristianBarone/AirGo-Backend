@@ -1,0 +1,30 @@
+name: Lint and Format Check
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  lint:
+    name: Checking Code Structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install flake8 black
+
+      - name: Check with Black
+        run: black --check .
+
+      - name: Lint with flake8
+        run: flake8 .
