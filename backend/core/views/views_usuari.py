@@ -91,15 +91,17 @@ class UsuariViewSet(viewsets.ModelViewSet):
         methods=["get"],
         permission_classes=[IsAuthenticated],
         url_path="me/routes",
-        url_name="me-routes"
+        url_name="me-routes",
     )
     def get_saved_routes(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        rutes = UsuariRuta.objects.filter(usuari=usuari).select_related('route')
+        rutes = UsuariRuta.objects.filter(usuari=usuari).select_related("route")
         serializer = UsuariRutaSerializer(rutes, many=True)
         return Response(serializer.data)
 
@@ -108,41 +110,54 @@ class UsuariViewSet(viewsets.ModelViewSet):
         methods=["post"],
         permission_classes=[IsAuthenticated],
         url_path="me/routes/save",
-        url_name="me-routes-save"
+        url_name="me-routes-save",
     )
     def save_route(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = UsuariRutaSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        route = serializer.validated_data['route']
+        route = serializer.validated_data["route"]
 
         if UsuariRuta.objects.filter(usuari=usuari, route=route).exists():
-            return Response({"error": "La ruta ya está guardada"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"error": "La ruta ya está guardada"}, status=status.HTTP_409_CONFLICT
+            )
 
         UsuariRuta.objects.create(usuari=usuari, route=route)
-        return Response({"message": "Ruta guardada correctamente"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Ruta guardada correctamente"}, status=status.HTTP_201_CREATED
+        )
 
     @action(
         detail=False,
         methods=["delete"],
         permission_classes=[IsAuthenticated],
         url_path="me/routes/(?P<route_id>[^/.]+)",
-        url_name="me-routes-delete"
+        url_name="me-routes-delete",
     )
     def delete_saved_route(self, request, route_id=None):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        deleted, _ = UsuariRuta.objects.filter(usuari=usuari, route_id=route_id).delete()
+        deleted, _ = UsuariRuta.objects.filter(
+            usuari=usuari, route_id=route_id
+        ).delete()
         if not deleted:
-            return Response({"error": "Ruta no encontrada en guardados"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Ruta no encontrada en guardados"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

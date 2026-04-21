@@ -49,15 +49,15 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsuariTitol
-        fields = ['titol']
+        fields = ["titol"]
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
     route = RouteSerializer(read_only=True)
     route_id = serializers.PrimaryKeyRelatedField(
-        queryset=Route.objects.all(), source='route', write_only=True
+        queryset=Route.objects.all(), source="route", write_only=True
     )
 
     class Meta:
         model = UsuariRuta
-        fields = ['id', 'route', 'route_id', 'saved_at']
+        fields = ["id", "route", "route_id", "saved_at"]

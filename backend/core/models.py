@@ -94,14 +94,16 @@ class Route(models.Model):
     def __str__(self):
         return self.name
 
+
 class UsuariRuta(models.Model):
-    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name='rutes_guardades')
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
+    )
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['usuari', 'route']
+        unique_together = ["usuari", "route"]
 
     def __str__(self):
         return f"{self.usuari.username} - {self.route.name}"
-    

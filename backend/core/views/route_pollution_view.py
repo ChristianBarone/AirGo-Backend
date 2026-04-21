@@ -102,9 +102,11 @@ class EcoRouteView(APIView):
 
             # 5. Guardar la ruta en BD
             distance_km = round(path.get("distance", 0) / 1000, 3)
-            avg_aqi = round(
-                sum(s["aqi"] for s in stations) / len(stations), 2
-            ) if stations else 0.0
+            avg_aqi = (
+                round(sum(s["aqi"] for s in stations) / len(stations), 2)
+                if stations
+                else 0.0
+            )
 
             route_obj = Route.objects.create(
                 name=f"{data.get('lat_start')},{data.get('lon_start')} → {data.get('lat_end')},{data.get('lon_end')}",
@@ -112,7 +114,7 @@ class EcoRouteView(APIView):
                 end_location=f"{end['lat']},{end['lon']}",
                 distance=distance_km,
                 air_quality=avg_aqi,
-                is_safe=avg_aqi < 100
+                is_safe=avg_aqi < 100,
             )
 
             # 6. Formatear respuesta final para el Frontend
