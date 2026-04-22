@@ -52,7 +52,8 @@ class TestBicingAPI:
             bikes_available=10,
             docks_available=10,
         )
-        # Usem requests.exceptions.RequestException perquè el teu servei és el que atrapa
+        # Usem requests.exceptions.RequestException
+        # perquè el servei és el que atrapa
         with patch(
             "core.services.bicing.requests.get",
             side_effect=requests.exceptions.RequestException,

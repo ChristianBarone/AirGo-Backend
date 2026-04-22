@@ -1,4 +1,3 @@
-import pytest
 from core.views.route_pollution_view import generar_segments_contaminacio, haversine
 from core.services.navigation import get_eco_route as get_eco_service
 from unittest.mock import patch

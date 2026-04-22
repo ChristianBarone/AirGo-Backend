@@ -2,7 +2,6 @@ import pytest
 
 from core.models import Usuari
 from core.serializers import UsuariSerializer, GoogleAuthSerializer
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 @pytest.mark.django_db
@@ -47,7 +46,8 @@ class TestSerializers:
 
     # def test_usuari_serializer_mida_imatge_limit(self):
     # mida_massa_gran = 2 * 1024 * 1024 + 1000
-    # contingut_imatge_real = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+    # contingut_imatge_real = b'GIF89a\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff\x00\x00\
+    # x00!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
     # imatge_falsa = SimpleUploadedFile(
     # "test.gif",
     # contingut_imatge_real + b"0" * mida_massa_gran,
