@@ -11,9 +11,7 @@ def test_haversine_logic():
 
 def test_generar_segments_logic():
     punts = [[2.0, 41.0], [2.001, 41.001], [2.1, 41.1]]
-    estacions = [
-        {"geoPoint": {"lat": 41.0, "lon": 2.0}, "aqi": 80}
-    ]
+    estacions = [{"geoPoint": {"lat": 41.0, "lon": 2.0}, "aqi": 80}]
     # El primer punt està a prop de l'estació (AQI 80), el segon també, el tercer no (AQI 0)
     segments = generar_segments_contaminacio(punts, estacions, radi_km=0.5)
 
@@ -21,7 +19,7 @@ def test_generar_segments_logic():
     assert segments[0][2] == 80  # El valor d'AQI detectat
 
 
-@patch('core.services.navigation.requests.post')
+@patch("core.services.navigation.requests.post")
 def test_navigation_service_error_handling(mock_post):
     """Prova el tractament d'errors de GraphHopper"""
     mock_post.return_value.status_code = 400

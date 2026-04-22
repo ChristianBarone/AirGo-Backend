@@ -1,7 +1,12 @@
 import pytest
 from unittest.mock import patch
 from rest_framework.test import APIClient
-from core.services.air_quality import calcular_aqi, haversine_km, get_latest_hour_value, get_air_quality_near
+from core.services.air_quality import (
+    calcular_aqi,
+    haversine_km,
+    get_latest_hour_value,
+    get_air_quality_near,
+)
 
 
 @pytest.mark.django_db
@@ -38,36 +43,59 @@ class TestAirQualityAPI:
         assert get_latest_hour_value({}) is None
 
     # TESTS D'INTEGRACIÓ
-    @patch('core.services.air_quality.requests.get')
+    @patch("core.services.air_quality.requests.get")
     def test_get_air_quality_integration(self, mock_get):
         """Simulem l'OpenData de la Generalitat i comprovem la resposta de l'API"""
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = [{
-            "latitud": "41.38", "longitud": "2.17", "contaminant": "PM10",
-            "nom_estacio": "Eixample", "h01": "25"
-        }]
+        mock_get.return_value.json.return_value = [
+            {
+                "latitud": "41.38",
+                "longitud": "2.17",
+                "contaminant": "PM10",
+                "nom_estacio": "Eixample",
+                "h01": "25",
+            }
+        ]
 
-        response = self.client.get(self.url, {'lat': 41.38, 'lon': 2.17, 'radio': 5})
+        response = self.client.get(self.url, {"lat": 41.38, "lon": 2.17, "radio": 5})
 
         assert response.status_code == 200
-        assert response.data[0]['zone'] == "Eixample"
-        assert response.data[0]['aqi'] == 25
+        assert response.data[0]["zone"] == "Eixample"
+        assert response.data[0]["aqi"] == 25
 
-    @patch('core.services.air_quality.requests.get')
+    @patch("core.services.air_quality.requests.get")
     def test_get_air_quality_near_filtering(self, mock_get):
         """Testejem el filtratge per radi i el 'pitjor AQI'"""
         mock_get.return_value.json.return_value = [
             # Estació a prop (0km) amb dos contaminants (ens hem de quedar el pitjor)
-            {"latitud": "41.0", "longitud": "2.0", "contaminant": "PM10", "nom_estacio": "Estacio1", "h01": "10"},
-            {"latitud": "41.0", "longitud": "2.0", "contaminant": "NO2", "nom_estacio": "Estacio1", "h01": "100"},
+            {
+                "latitud": "41.0",
+                "longitud": "2.0",
+                "contaminant": "PM10",
+                "nom_estacio": "Estacio1",
+                "h01": "10",
+            },
+            {
+                "latitud": "41.0",
+                "longitud": "2.0",
+                "contaminant": "NO2",
+                "nom_estacio": "Estacio1",
+                "h01": "100",
+            },
             # Estació lluny (fora de ràdio de 5km)
-            {"latitud": "42.0", "longitud": "3.0", "contaminant": "PM10", "nom_estacio": "Lluny", "h01": "50"},
-            {"latitud": "invalid", "longitud": "2.0"}
+            {
+                "latitud": "42.0",
+                "longitud": "3.0",
+                "contaminant": "PM10",
+                "nom_estacio": "Lluny",
+                "h01": "50",
+            },
+            {"latitud": "invalid", "longitud": "2.0"},
         ]
 
         results = get_air_quality_near(41.0, 2.0, radio_km=5)
 
         assert len(results) == 1
-        assert results[0]['zone'] == "Estacio1"
+        assert results[0]["zone"] == "Estacio1"
         # L'AQI de NO2 (100 -> 111) és major que PM10 (10 -> 10)
-        assert results[0]['aqi'] > 100
+        assert results[0]["aqi"] > 100

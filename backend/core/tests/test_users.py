@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from core.models import Usuari, Titol, UsuariTitol
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+
 @pytest.mark.django_db
 class TestUsuariViewSet:
     def setup_method(self):
@@ -14,11 +15,17 @@ class TestUsuariViewSet:
         self.usuari, _ = Usuari.objects.get_or_create(
             google_id="G_VIEWSET_UNIQUE",
             defaults={
-                "username": self.username, "punts": 0, "pes": 60,
-                "altura": 160, "ratxa": 0, "limitRutes": 5
-            }
+                "username": self.username,
+                "punts": 0,
+                "pes": 60,
+                "altura": 160,
+                "ratxa": 0,
+                "limitRutes": 5,
+            },
         )
-        self.client.force_authenticate(user=self.user, token={'google_id': 'G_VIEWSET_UNIQUE'})
+        self.client.force_authenticate(
+            user=self.user, token={"google_id": "G_VIEWSET_UNIQUE"}
+        )
 
     def test_retrieve_me_profile(self):
         url = "/api/usuaris/me/profile/"
@@ -35,7 +42,7 @@ class TestUsuariViewSet:
     def test_change_profile_pic_success(self):
         foto = SimpleUploadedFile("foto.jpg", b"content", content_type="image/jpeg")
         url = "/api/usuaris/me/profile-pic/"
-        response = self.client.patch(url, {"profile_pic": foto}, format='multipart')
+        response = self.client.patch(url, {"profile_pic": foto}, format="multipart")
         assert response.status_code == 200
 
     def test_delete_account(self):
@@ -45,13 +52,14 @@ class TestUsuariViewSet:
 
     def test_search_usuaris(self):
         url = "/api/usuaris/"
-        response = self.client.get(url, {'search': self.username})
+        response = self.client.get(url, {"search": self.username})
         assert response.status_code == 200
 
     def test_action_usuario_no_encontrado(self):
         # Simulem un usuari que té token però no existeix a la DB d'Usuari
-        self.client.force_authenticate(user=self.user, token={'google_id': 'NONEXISTENT'})
+        self.client.force_authenticate(
+            user=self.user, token={"google_id": "NONEXISTENT"}
+        )
         url = "/api/usuaris/me/profile/"
         response = self.client.get(url)
         assert response.status_code == 404
-
