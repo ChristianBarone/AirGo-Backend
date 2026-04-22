@@ -11,7 +11,8 @@ def test_haversine_logic():
 def test_generar_segments_logic():
     punts = [[2.0, 41.0], [2.001, 41.001], [2.1, 41.1]]
     estacions = [{"geoPoint": {"lat": 41.0, "lon": 2.0}, "aqi": 80}]
-    # El primer punt està a prop de l'estació (AQI 80), el segon també, el tercer no (AQI 0)
+    # El primer punt està a prop de l'estació (AQI 80)
+    # el segon també, el tercer no (AQI 0)
     segments = generar_segments_contaminacio(punts, estacions, radi_km=0.5)
 
     assert len(segments) >= 1
