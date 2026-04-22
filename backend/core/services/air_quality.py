@@ -1,9 +1,5 @@
 import math
 import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from ..services.navigation import get_eco_route
-
 
 AIR_QUALITY_URL = "https://analisi.transparenciacatalunya.cat/resource/tasf-thgu.json"
 
@@ -52,8 +48,7 @@ def calcular_aqi(contaminant, valor):
     for c_low, c_high, aqi_low, aqi_high in umbrales[contaminant]:
         if c_low <= valor <= c_high:
             return int(
-                aqi_low
-                + (valor - c_low) * (aqi_high - aqi_low) / (c_high - c_low)
+                aqi_low + (valor - c_low) * (aqi_high - aqi_low) / (c_high - c_low)
             )
 
     return 300
@@ -109,9 +104,7 @@ def get_air_quality_near(lat, lon, radio_km=5):
     Se agrupa por estación y se conserva el peor AQI encontrado entre los contaminantes
     disponibles para esa estación.
     """
-    params = {
-        "$limit": 5000
-    }
+    params = {"$limit": 5000}
 
     response = requests.get(AIR_QUALITY_URL, params=params, timeout=15)
     response.raise_for_status()
@@ -141,11 +134,8 @@ def get_air_quality_near(lat, lon, radio_km=5):
             if station_name not in estaciones or aqi > estaciones[station_name]["aqi"]:
                 estaciones[station_name] = {
                     "zone": station_name,
-                    "geoPoint": {
-                        "lat": slat,
-                        "lon": slon
-                    },
-                    "aqi": aqi
+                    "geoPoint": {"lat": slat, "lon": slon},
+                    "aqi": aqi,
                 }
 
         except (KeyError, ValueError, TypeError):
@@ -167,43 +157,33 @@ def get_eco_route(start_coords, end_coords, stations):
         aqi = station["aqi"]
 
         d = 0.004
-        polygon_coords = [[
-            [lon - d, lat - d],
-            [lon + d, lat - d],
-            [lon + d, lat + d],
-            [lon - d, lat + d],
-            [lon - d, lat - d]
-        ]]
+        polygon_coords = [
+            [
+                [lon - d, lat - d],
+                [lon + d, lat - d],
+                [lon + d, lat + d],
+                [lon - d, lat + d],
+                [lon - d, lat - d],
+            ]
+        ]
 
         feature = {
             "type": "Feature",
             "id": area_id,
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": polygon_coords
-            },
-            "properties": {
-                "aqi_value": aqi,
-                "name": station.get("zone", "sensor")
-            }
+            "geometry": {"type": "Polygon", "coordinates": polygon_coords},
+            "properties": {"aqi_value": aqi, "name": station.get("zone", "sensor")},
         }
         features_list.append(feature)
 
         if aqi > 100:
-            priority_rules.append({
-                "if": f"in_area_{area_id}",
-                "multiply_by": "0.05"
-            })
+            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.05"})
         elif aqi > 50:
-            priority_rules.append({
-                "if": f"in_area_{area_id}",
-                "multiply_by": "0.4"
-            })
+            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.4"})
 
     payload = {
         "points": [
             [start_coords["lon"], start_coords["lat"]],
-            [end_coords["lon"], end_coords["lat"]]
+            [end_coords["lon"], end_coords["lat"]],
         ],
         "profile": "eco_bike",
         "ch.disable": True,
@@ -211,11 +191,8 @@ def get_eco_route(start_coords, end_coords, stations):
         "details": ["pollution", "average_speed", "time", "distance"],
         "custom_model": {
             "priority": priority_rules,
-            "areas": {
-                "type": "FeatureCollection",
-                "features": features_list
-            }
-        }
+            "areas": {"type": "FeatureCollection", "features": features_list},
+        },
     }
 
     try:

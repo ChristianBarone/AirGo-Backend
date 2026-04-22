@@ -1,16 +1,18 @@
 import os
 from django.db import models
 
+
 class Idioma(models.TextChoices):
     CAT = "CAT", "Catalan"
     ES = "ES", "Español"
     ENG = "ENG", "English"
 
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
     punts = models.IntegerField()
-    profile_pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    profile_pic = models.ImageField(upload_to="profile_pics", blank=True, null=True)
     teBici = models.BooleanField(default=False)
     pes = models.FloatField()
     altura = models.FloatField()
@@ -18,7 +20,7 @@ class Usuari(models.Model):
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
-    insignies = models.ImageField(upload_to='insignies', blank=True, null=True)
+    insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
 
     def __str__(self):
         return self.username
@@ -43,11 +45,13 @@ class Titol(models.Model):
 
 
 class UsuariTitol(models.Model):
-    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name='titols_desbloquejats')
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="titols_desbloquejats"
+    )
     titol = models.ForeignKey(Titol, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ['usuari', 'titol']
+        unique_together = ["usuari", "titol"]
 
     def __str__(self):
         return f"{self.usuari.username} - {self.titol.nom}"
@@ -72,11 +76,12 @@ class AirQualityHistoric(models.Model):
     lon = models.FloatField()
     aqi = models.FloatField()
     day_of_week = models.IntegerField()  # 0=lunes, 6=domingo
-    hora = models.IntegerField()         # 8 o 18 por ejemplo
+    hora = models.IntegerField()  # 8 o 18 por ejemplo
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ['lat', 'lon', 'day_of_week', 'hora']
+        unique_together = ["lat", "lon", "day_of_week", "hora"]
+
 
 class Route(models.Model):
     name = models.CharField(max_length=100)
@@ -89,14 +94,16 @@ class Route(models.Model):
     def __str__(self):
         return self.name
 
+
 class UsuariRuta(models.Model):
-    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name='rutes_guardades')
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
+    )
     route = models.ForeignKey(Route, on_delete=models.CASCADE)
     saved_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['usuari', 'route']
+        unique_together = ["usuari", "route"]
 
     def __str__(self):
         return f"{self.usuari.username} - {self.route.name}"
-    

@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from ..services.bicing import get_bicing_near
 from ..models import BicingEstacio
 
+
 class BicingView(APIView):
     permission_classes = [IsAuthenticated]
 

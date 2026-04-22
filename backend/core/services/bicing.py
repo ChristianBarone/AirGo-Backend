@@ -1,10 +1,14 @@
 import requests
 
 # Feed de información estática de estaciones
-STATION_INFO_URL = "https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/station_information.json"
+STATION_INFO_URL = (
+    "https://barcelona.publicbikesystem.net/customer/gbfs/v3.0/station_information.json"
+)
 
 # Feed de estado en tiempo real
-STATION_STATUS_URL = "https://barcelona.publicbikesystem.net/ube/gbfs/v1/en/station_status.json"
+STATION_STATUS_URL = (
+    "https://barcelona.publicbikesystem.net/ube/gbfs/v1/en/station_status.json"
+)
 
 
 def extract_station_name(name_field, preferred_lang="ca"):
@@ -88,18 +92,21 @@ def get_bicing_near(lat, lon, radio_km=5):
                 station_id = str(station["station_id"])
                 status = statuses.get(station_id, {})
 
-                result.append({
-                    "id": station_id,
-                    "name": extract_station_name(station.get("name"), "ca"),
-                    "geoPoint": {
-                        "lat": slat,
-                        "lon": slon
-                    },
-                    "mechanicalBikes": status.get("num_bikes_available_types", {}).get("mechanical", 0),
-                    "electricBikes": status.get("num_bikes_available_types", {}).get("ebike", 0),
-                    "freeSlots": status.get("num_docks_available", 0),
-                    "status": status.get("status", "unknown"),
-                })
+                result.append(
+                    {
+                        "id": station_id,
+                        "name": extract_station_name(station.get("name"), "ca"),
+                        "geoPoint": {"lat": slat, "lon": slon},
+                        "mechanicalBikes": status.get(
+                            "num_bikes_available_types", {}
+                        ).get("mechanical", 0),
+                        "electricBikes": status.get(
+                            "num_bikes_available_types", {}
+                        ).get("ebike", 0),
+                        "freeSlots": status.get("num_docks_available", 0),
+                        "status": status.get("status", "unknown"),
+                    }
+                )
 
         except (KeyError, ValueError, TypeError):
             continue
