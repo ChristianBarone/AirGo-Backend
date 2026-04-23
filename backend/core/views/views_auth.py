@@ -28,15 +28,12 @@ class GoogleLoginView(APIView):
 
         try:
             idinfo = id_token.verify_oauth2_token(
-                token,
-                requests.Request(),
-                GOOGLE_CLIENT_ID
+                token, requests.Request(), GOOGLE_CLIENT_ID
             )
 
             if not idinfo.get("email_verified", False):
                 return Response(
-                    {"error": "Email not verified"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Email not verified"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
             email = idinfo["email"]
@@ -45,11 +42,7 @@ class GoogleLoginView(APIView):
             google_id = idinfo["sub"]  # <-- guardar el google_id
 
             user, created = User.objects.get_or_create(
-                username=email,
-                defaults={
-                    "email": email,
-                    "first_name": name
-                }
+                username=email, defaults={"email": email, "first_name": name}
             )
 
             usuari, _ = Usuari.objects.get_or_create(  # <-- guardar el objeto usuari
@@ -63,22 +56,24 @@ class GoogleLoginView(APIView):
                     "ratxa": 0,
                     "limitRutes": 0,
                     "titol": "",
-                }
+                },
             )
 
             refresh = RefreshToken.for_user(user)
-            refresh['google_id'] = usuari.google_id  # <-- meter google_id en el token
+            refresh["google_id"] = usuari.google_id  # <-- meter google_id en el token
 
-            return Response({
-                "user": email,
-                "usuari_id": usuari.id,             # <-- devolver el id también
-                "picture": picture,
-                "access": str(refresh.access_token),
-                "refresh": str(refresh)
-            })
+            return Response(
+                {
+                    "user": email,
+                    "usuari_id": usuari.id,  # <-- devolver el id también
+                    "picture": picture,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                }
+            )
 
         except ValueError as e:
             return Response(
                 {"error": "Invalid Google token", "detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )

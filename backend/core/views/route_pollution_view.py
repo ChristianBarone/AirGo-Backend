@@ -7,13 +7,15 @@ from ..services.navigation import get_eco_route
 
 import math
 
+
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distància en KM entre dos punts de la terra."""
-    R = 6371.0 # Radi de la terra en km
+    R = 6371.0  # Radi de la terra en km
     dLat = math.radians(lat2 - lat1)
     dLon = math.radians(lon2 - lon1)
-    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(math.radians(lat1)) \
-        * math.cos(math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
+    a = math.sin(dLat / 2) * math.sin(dLat / 2) + math.cos(
+        math.radians(lat1)
+    ) * math.cos(math.radians(lat2)) * math.sin(dLon / 2) * math.sin(dLon / 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return R * c
 
@@ -58,6 +60,7 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=0.4):
 
     return details
 
+
 class EcoRouteView(APIView):
     def post(self, request):
         data = request.data
@@ -66,16 +69,15 @@ class EcoRouteView(APIView):
         try:
             start = {
                 "lat": float(data.get("lat_start")),
-                "lon": float(data.get("lon_start"))
+                "lon": float(data.get("lon_start")),
             }
-            end = {
-                "lat": float(data.get("lat_end")),
-                "lon": float(data.get("lon_end"))
-            }
+            end = {"lat": float(data.get("lat_end")), "lon": float(data.get("lon_end"))}
         except (TypeError, ValueError, KeyError):
             return Response(
-                {"error": "Coordenadas lat_start, lon_start, lat_end, lon_end son obligatorias y deben ser números."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "error": "Coordenadas lat_start, lon_start, lat_end, lon_end son obligatorias y deben ser números."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -89,33 +91,42 @@ class EcoRouteView(APIView):
 
             # 4. Verificar si GraphHopper devolvió una ruta válida
             if "paths" not in route_data:
-                return Response({
-                    "error": "GraphHopper no pudo calcular la ruta.",
-                    "details": route_data.get("error", "Error desconocido")
-                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response(
+                    {
+                        "error": "GraphHopper no pudo calcular la ruta.",
+                        "details": route_data.get("error", "Error desconocido"),
+                    },
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
-            path = route_data['paths'][0]
+            path = route_data["paths"][0]
             punts_gh = path.get("points", {}).get("coordinates", [])
-            segments_colors = generar_segments_contaminacio(punts_gh, stations, radi_km=0.4)
+            segments_colors = generar_segments_contaminacio(
+                punts_gh, stations, radi_km=0.4
+            )
 
             # 5. Formatear respuesta final para el Frontend
             response_payload = {
                 "status": "success",
                 "summary": {
                     "distance_meters": round(path.get("distance", 0), 2),
-                    "duration_minutes": round(path.get("time", 0) / 60000, 2), # ms a mins
-                    "duration_seconds": int(path.get("time", 0) / 1000), # ms a s
-                    "aqi_stations_detected": len(stations)
+                    "duration_minutes": round(
+                        path.get("time", 0) / 60000, 2
+                    ),  # ms a mins
+                    "duration_seconds": int(path.get("time", 0) / 1000),  # ms a s
+                    "aqi_stations_detected": len(stations),
                 },
                 # Convertimos [lon, lat] de GH a [lat, lon] para Leaflet/Google Maps
                 "geometry": {
                     "type": "LineString",
-                    "coordinates": [[p[1], p[0]] for p in path["points"]["coordinates"]]
+                    "coordinates": [
+                        [p[1], p[0]] for p in path["points"]["coordinates"]
+                    ],
                 },
                 # Segmentos de polución para pintar la línea por colores
                 "pollution_details": segments_colors,
                 # Opcional: enviar las estaciones usadas para que el front las pinte como iconos
-                "stations_info": stations
+                "stations_info": stations,
             }
 
             return Response(response_payload, status=status.HTTP_200_OK)
@@ -123,6 +134,5 @@ class EcoRouteView(APIView):
         except Exception as e:
             return Response(
                 {"error": f"Error inesperado en el servidor: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-

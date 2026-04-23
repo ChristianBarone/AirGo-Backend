@@ -12,9 +12,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 router = DefaultRouter()
-router.register(r'routes', RouteViewSet)
-router.register(r'usuaris', UsuariViewSet)
-router.register(r'pla-entrenament', PlaEntrenamentViewset)
+router.register(r"routes", RouteViewSet)
+router.register(r"usuaris", UsuariViewSet)
+router.register(r"pla-entrenament", PlaEntrenamentViewset)
 
 urlpatterns = [
     path("", home, name="home"),

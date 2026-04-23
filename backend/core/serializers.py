@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament
 import os
 
+
 class UsuariSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()
 
@@ -22,9 +23,19 @@ class UsuariSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("La imagen no puede superar 2MB")
         return value
 
+    def validate_pes(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("El peso debe ser mayor a 0 kg.")
+        return value
+
+    def validate_altura(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("La altura debe ser mayor a 0 cm.")
+        return value
+
     class Meta:
         model = Usuari
-        fields = '__all__'
+        fields = "__all__"
 
 
 class GoogleAuthSerializer(serializers.Serializer):
@@ -34,13 +45,13 @@ class GoogleAuthSerializer(serializers.Serializer):
 class RouteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Route
-        fields = '__all__'
+        fields = "__all__"
 
 
 class TitolSerializer(serializers.ModelSerializer):
     class Meta:
         model = Titol
-        fields = ['id', 'nom', 'descripcio']
+        fields = ["id", "nom", "descripcio"]
 
 
 class UsuariTitolSerializer(serializers.ModelSerializer):
@@ -48,9 +59,10 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsuariTitol
-        fields = ['titol']
+        fields = ["titol"]
+
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
-        fields = '__all__'
+        fields = "__all__"

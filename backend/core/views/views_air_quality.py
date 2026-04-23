@@ -18,7 +18,7 @@ class AirQualityView(APIView):
         except (TypeError, ValueError):
             return Response(
                 {"error": "Los parámetros lat, lon y radio deben ser numéricos"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -27,8 +27,9 @@ class AirQualityView(APIView):
         except Exception as e:
             return Response(
                 {"error": f"Error obteniendo calidad del aire: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
 
 def get_eco_route(start_coords, end_coords, stations):
     gh_url = "http://localhost:8080/route"
@@ -45,24 +46,22 @@ def get_eco_route(start_coords, end_coords, stations):
 
         # Definir el polígono (cuadrado de influencia)
         d = 0.004
-        polygon_coords = [[
-            [lon - d, lat - d], [lon + d, lat - d],
-            [lon + d, lat + d], [lon - d, lat + d],
-            [lon - d, lat - d]
-        ]]
+        polygon_coords = [
+            [
+                [lon - d, lat - d],
+                [lon + d, lat - d],
+                [lon + d, lat + d],
+                [lon - d, lat + d],
+                [lon - d, lat - d],
+            ]
+        ]
 
         # objeto feature GeoJSON
         feature = {
             "type": "Feature",
             "id": area_id,
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": polygon_coords
-            },
-            "properties": {
-                "aqi_value": aqi,
-                "name": station.get("zone", "sensor")
-            }
+            "geometry": {"type": "Polygon", "coordinates": polygon_coords},
+            "properties": {"aqi_value": aqi, "name": station.get("zone", "sensor")},
         }
         features_list.append(feature)
 
@@ -75,20 +74,25 @@ def get_eco_route(start_coords, end_coords, stations):
     # 2. Configurar el Payload con el Custom Model correcto
     payload = {
         "points": [
-            [start_coords['lon'], start_coords['lat']],
-            [end_coords['lon'], end_coords['lat']]
+            [start_coords["lon"], start_coords["lat"]],
+            [end_coords["lon"], end_coords["lat"]],
         ],
         "profile": "eco_bike",
         "ch.disable": True,
         "points_encoded": False,
-        "details": ["pollution", "average_speed", "time", "distance"], # Pide todos los detalles
+        "details": [
+            "pollution",
+            "average_speed",
+            "time",
+            "distance",
+        ],  # Pide todos los detalles
         "custom_model": {
             "priority": priority_rules,
             "areas": {
                 "type": "FeatureCollection",
-                "features": features_list # <--- Aquí va la lista que creamos
-            }
-        }
+                "features": features_list,  # <--- Aquí va la lista que creamos
+            },
+        },
     }
 
     try:
