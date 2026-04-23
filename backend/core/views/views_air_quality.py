@@ -1,15 +1,68 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.permissions import AllowAny
+
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, inline_serializer
+from drf_spectacular.types import OpenApiTypes
+
 from ..services.air_quality import get_air_quality_near
-import requests
 
 
 class AirQualityView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @extend_schema(
+        tags=["Air Quality"],
+        summary="Calidad del aire cercana",
+        description=(
+            "Devuelve las estaciones de calidad del aire dentro del radio indicado alrededor "
+            "de las coordenadas dadas. No requiere autenticación."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="lat",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Latitud del punto de referencia (ej: 41.385)",
+            ),
+            OpenApiParameter(
+                name="lon",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Longitud del punto de referencia (ej: 2.173)",
+            ),
+            OpenApiParameter(
+                name="radio",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Radio de búsqueda en kilómetros (por defecto: 5)",
+            ),
+        ],
+        responses={
+            200: inline_serializer(
+                name="AirQualityStation",
+                many=True,
+                fields={
+                    "zone": serializers.CharField(help_text="Nombre de la zona / estación"),
+                    "aqi": serializers.FloatField(help_text="Índice de calidad del aire (AQI)"),
+                    "geoPoint": inline_serializer(
+                        name="GeoPoint",
+                        fields={
+                            "lat": serializers.FloatField(),
+                            "lon": serializers.FloatField(),
+                        },
+                    ),
+                },
+            ),
+            400: OpenApiResponse(description="Parámetros lat, lon o radio no numéricos"),
+            500: OpenApiResponse(description="Error interno al consultar la fuente de datos"),
+        },
+    )
     def get(self, request):
         try:
             lat = float(request.GET.get("lat"))
@@ -29,76 +82,3 @@ class AirQualityView(APIView):
                 {"error": f"Error obteniendo calidad del aire: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
-
-
-def get_eco_route(start_coords, end_coords, stations):
-    gh_url = "http://localhost:8080/route"
-
-    # 1. Crear la lista de Features (Polígonos)
-    features_list = []
-    priority_rules = []
-
-    for i, station in enumerate(stations):
-        area_id = f"s{i}"
-        lat = station["geoPoint"]["lat"]
-        lon = station["geoPoint"]["lon"]
-        aqi = station["aqi"]
-
-        # Definir el polígono (cuadrado de influencia)
-        d = 0.004
-        polygon_coords = [
-            [
-                [lon - d, lat - d],
-                [lon + d, lat - d],
-                [lon + d, lat + d],
-                [lon - d, lat + d],
-                [lon - d, lat - d],
-            ]
-        ]
-
-        # objeto feature GeoJSON
-        feature = {
-            "type": "Feature",
-            "id": area_id,
-            "geometry": {"type": "Polygon", "coordinates": polygon_coords},
-            "properties": {"aqi_value": aqi, "name": station.get("zone", "sensor")},
-        }
-        features_list.append(feature)
-
-        # Regla de prioridad basada en el ID del Feature
-        if aqi > 100:
-            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.05"})
-        elif aqi > 50:
-            priority_rules.append({"if": f"in_area_{area_id}", "multiply_by": "0.4"})
-
-    # 2. Configurar el Payload con el Custom Model correcto
-    payload = {
-        "points": [
-            [start_coords["lon"], start_coords["lat"]],
-            [end_coords["lon"], end_coords["lat"]],
-        ],
-        "profile": "eco_bike",
-        "ch.disable": True,
-        "points_encoded": False,
-        "details": [
-            "pollution",
-            "average_speed",
-            "time",
-            "distance",
-        ],  # Pide todos los detalles
-        "custom_model": {
-            "priority": priority_rules,
-            "areas": {
-                "type": "FeatureCollection",
-                "features": features_list,  # <--- Aquí va la lista que creamos
-            },
-        },
-    }
-
-    try:
-        # Usamos POST porque el JSON del custom_model puede ser muy grande
-        response = requests.post(gh_url, json=payload)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        return {"error": f"Error en GraphHopper: {str(e)}"}
