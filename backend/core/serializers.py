@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici
 import os
-
 
 class UsuariSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()
@@ -59,6 +58,12 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UsuariTitol
+        fields = ["titol"]
+
+class TemplateExerciciSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemplateExercici
+        fields = '__all__'
         fields = ["titol"]
 
 
