@@ -9,6 +9,7 @@ from .views import RouteViewSet
 from .views.views_bicing import BicingView
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
@@ -18,6 +19,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view()),
+    path("auth/refresh/", TokenRefreshView.as_view()),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
     path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="air-quality"),

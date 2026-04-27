@@ -15,6 +15,7 @@ from core.views.views_usuari import UsuariViewSet
 from core.views.route_pollution_view import EcoRouteView
 from core.views.views_air_quality import AirQualityView
 from core.views.views_bicing import BicingView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
@@ -28,6 +29,7 @@ urlpatterns = [
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view(), name="auth-google"),
+    path("auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
     path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
