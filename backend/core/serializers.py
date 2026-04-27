@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -94,3 +94,15 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ['diesDurada', 'numEntrenamentsSetmanals', 'templates']
+        fields = ["titol"]
+
+
+class UsuariRutaSerializer(serializers.ModelSerializer):
+    route = RouteSerializer(read_only=True)
+    route_id = serializers.PrimaryKeyRelatedField(
+        queryset=Route.objects.all(), source="route", write_only=True
+    )
+
+    class Meta:
+        model = UsuariRuta
+        fields = ["id", "route", "route_id", "saved_at"]

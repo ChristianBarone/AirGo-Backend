@@ -3,7 +3,6 @@ from core.models import AirQualityHistoric
 from core.services.air_quality import get_air_quality_near  # ajusta el import
 from datetime import datetime
 
-
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         now = datetime.now()
@@ -44,11 +43,13 @@ class Command(BaseCommand):
                         defaults={"aqi": aqi_maxim},  # Ara sí, li passem un número!
                     )
                     self.stdout.write(
-                        f"Punt {punto['lat']}, {punto['lon']} guardat amb AQI: {aqi_maxim}"
+                        f"Punt {punto['lat']}, "
+                        f"{punto['lon']} guardat amb AQI: {aqi_maxim}"
                     )
                 else:
                     self.stdout.write(
-                        f"No hi ha estacions a prop del punt {punto['lat']}, {punto['lon']}"
+                        f"No hi ha estacions a prop del punt"
+                        f" {punto['lat']}, {punto['lon']}"
                     )
 
             except Exception as e:

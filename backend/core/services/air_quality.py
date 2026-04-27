@@ -1,8 +1,5 @@
 import math
 import requests
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from ..services.navigation import get_eco_route
 
 AIR_QUALITY_URL = "https://analisi.transparenciacatalunya.cat/resource/tasf-thgu.json"
 

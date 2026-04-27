@@ -65,7 +65,7 @@ def get_eco_route(start_coords, end_coords, stations):
 
     try:
         response = requests.post(gh_url, json=payload)
-        # Si GraphHopper ens dóna un error 400 (ex: ruta fora del mapa, error de sintaxi)
+        # Si GraphHopper dona un error 400 (ex: ruta fora del mapa, error de sintaxi)
         if response.status_code != 200:
             return {"error": f"Error de GraphHopper: {response.text}"}
 
