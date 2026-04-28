@@ -77,12 +77,15 @@ class EcoRouteView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Obtener el perfil (por defecto: eco_bike)
+        profile = data.get("profile", "eco_bike")
+
         try:
             # 2. Obtener datos de polución actuales (Capa Dinámica)
             stations = get_air_quality_near(start["lat"], start["lon"], radio_km=20)
 
-            # 3. Llamar a GraphHopper
-            route_data = get_eco_route(start, end, stations)
+            # 3. Llamar a GraphHopper con el perfil especificado
+            route_data = get_eco_route(start, end, stations, profile=profile)
 
             # 4. Verificar si GraphHopper devolvió una ruta válida
             if "paths" not in route_data:
