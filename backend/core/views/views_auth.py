@@ -57,12 +57,15 @@ class GoogleLoginView(APIView):
 
         try:
             idinfo = id_token.verify_oauth2_token(
-                token, requests.Request(), GOOGLE_CLIENT_ID
+                token,
+                requests.Request(),
+                GOOGLE_CLIENT_ID
             )
 
             if not idinfo.get("email_verified", False):
                 return Response(
-                    {"error": "Email not verified"}, status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Email not verified"},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
             email = idinfo["email"]
@@ -86,7 +89,7 @@ class GoogleLoginView(APIView):
                     "ratxa": 0,
                     "limitRutes": 0,
                     "titol": "",
-                },
+                }
             )
 
             refresh = RefreshToken.for_user(user)
@@ -103,5 +106,5 @@ class GoogleLoginView(APIView):
         except ValueError as e:
             return Response(
                 {"error": "Invalid Google token", "detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_400_BAD_REQUEST
             )

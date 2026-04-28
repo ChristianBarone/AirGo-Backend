@@ -1,5 +1,6 @@
 import os
 from django.db import models
+from django.utils import timezone
 
 
 class Idioma(models.TextChoices):
@@ -7,6 +8,15 @@ class Idioma(models.TextChoices):
     ES = "ES", "Español"
     ENG = "ENG", "English"
 
+class TExercici(models.TextChoices):
+    CAMINAR = "CAM", "Caminar"
+    BICI = "BIC", "Bici"
+    ALTRES = "ALT", "Altres"
+
+class DifPlaEntrenament(models.TextChoices):
+    RELAXAT = "REL", "Relaxat"
+    NORMAL = "NOR", "Normal"
+    INTENS = "INT", "Intens"
 
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -17,10 +27,13 @@ class Usuari(models.Model):
     pes = models.FloatField()
     altura = models.FloatField()
     ratxa = models.IntegerField()
+    dificultatPla = models.CharField(max_length=3, choices=DifPlaEntrenament.choices, default=DifPlaEntrenament.NORMAL)
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
     insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
+
+    plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
 
     def __str__(self):
         return self.username
@@ -36,7 +49,7 @@ class Usuari(models.Model):
         super().save(*args, **kwargs)
 
     def actualitzarPerfilQuestionari(self, dades):
-        camps_permesos = ["titol", "pes", "altura"]
+        camps_permesos = ["titol", "pes", "altura", "dificultatPla"]
         hi_ha_canvis = False
 
         for camp, valor in dades.items():
@@ -108,11 +121,54 @@ class Route(models.Model):
     def __str__(self):
         return self.name
 
-
 class PlaEntrenament(models.Model):
     diesDurada = models.IntegerField()
     numEntrenamentsSetmanals = models.IntegerField()
-    
+
+class UsuariRuta(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
+    )
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    templates = models.ManyToManyField("TemplateExercici", related_name="plans")
+
+    def __str__(self):
+        return f"Pla de {self.diesDurada} dies"
+
+
+class Exercici(models.Model):
+    dataInici = models.DateTimeField(default=timezone.now)
+    dataFi = models.DateTimeField(null=True, blank=True)
+    completat = models.BooleanField(default=False)
+    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
+
+    template_origen = models.ForeignKey (
+        "TemplateExercici",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="instancies_exercici",
+    )
+
+class ExerciciExterior(Exercici):
+    dist_feta_km = models.FloatField()
+    calories = models.FloatField()
+
+class ExerciciRuta(ExerciciExterior):
+    dist_objectiu_km = models.FloatField()
+
+class TemplateExercici(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.TextField(blank=True)
+    # Cambiar default si hace falta
+    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
+
+    def __str__(self):
+        return self.nom
+
+
 class UsuariRuta(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"

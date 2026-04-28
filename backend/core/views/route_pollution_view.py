@@ -14,6 +14,7 @@ from ..models import Route
 
 # ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
 
+# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
 
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distancia en KM entre dos puntos de la Tierra."""
