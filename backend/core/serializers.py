@@ -12,6 +12,9 @@ class UsuariSerializer(serializers.ModelSerializer):
         return f"{base_url}{obj.profile_pic.url}"
 
     def validate_username(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
         if len(value) <= 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
