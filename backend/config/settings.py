@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "drf_spectacular",
     "core",
     "corsheaders",
@@ -159,3 +160,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o for o in csrf_origins.split(",") if o]
+
+#--Refresh---------------
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "ROTATE_REFRESH_TOKENS": True,       # ← cada refresh emite nuevo refresh token
+    "BLACKLIST_AFTER_ROTATION": True,    # ← invalida el anterior
+}
