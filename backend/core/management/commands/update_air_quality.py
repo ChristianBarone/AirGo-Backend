@@ -3,7 +3,6 @@ from core.models import AirQualityHistoric
 from core.services.air_quality import get_air_quality_near  # ajusta el import
 from datetime import datetime
 
-
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         now = datetime.now()

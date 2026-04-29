@@ -14,6 +14,8 @@ from ..models import Route
 
 # ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
 
+# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
+
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distancia en KM entre dos puntos de la Tierra."""
     R = 6371.0
@@ -166,7 +168,9 @@ class EcoRouteView(APIView):
 
             path = route_data['paths'][0]
             punts_gh = path.get("points", {}).get("coordinates", [])
-            segments_colors = generar_segments_contaminacio(punts_gh, stations, radi_km=0.4)
+            segments_colors = generar_segments_contaminacio(
+                punts_gh, stations, radi_km=0.4
+            )
 
             distance_km = round(path.get("distance", 0) / 1000, 3)
             avg_aqi = round(sum(s["aqi"] for s in stations) / len(stations), 2) if stations else 0.0
