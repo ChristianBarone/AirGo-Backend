@@ -297,6 +297,14 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
 
+        new_username = request.data.get("username")
+        if new_username is not None:
+            if not str(new_username).strip():
+                return Response({"username": ["El nombre de usuario no puede estar vacío."]},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if Usuari.objects.filter(username__iexact=new_username).exclude(pk=usuari.pk).exists():
+                return Response({"username": ["Este nombre de usuario ya existe."]}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.get_serializer(usuari, data=request.data, partial=True)
         if serializer.is_valid():
             usuari.actualitzarPerfilQuestionari(serializer.validated_data)
