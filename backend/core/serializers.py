@@ -93,7 +93,7 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaEntrenament
-        fields = ['diesDurada', 'numEntrenamentsSetmanals', 'templates']
+        fields = ['id', 'diesDurada', 'numEntrenamentsSetmanals', 'templates']
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
