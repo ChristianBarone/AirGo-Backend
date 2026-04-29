@@ -1,5 +1,3 @@
-version: "3.3"
-
 services:
   db:
     image: postgres:16
@@ -28,6 +26,8 @@ services:
       - db
     expose:
       - "8080"
+    volumes:
+      - ./backend/core/migrations:/app/core/migrations
     networks:
       - airgo_net
 
@@ -60,6 +60,7 @@ services:
 
 volumes:
   postgres_data:
+
 
 networks:
   airgo_net:
