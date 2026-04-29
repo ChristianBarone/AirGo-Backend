@@ -15,10 +15,12 @@ from core.views.views_usuari import UsuariViewSet
 from core.views.route_pollution_view import EcoRouteView
 from core.views.views_air_quality import AirQualityView
 from core.views.views_bicing import BicingView
+from core.views.views_pla_entrenament import PlaEntrenamentViewSet  # Importar PlaEntrenamentViewSet
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
 router.register(r"usuaris", UsuariViewSet)
+router.register(r"pla-entrenament", PlaEntrenamentViewSet)  # Registrar la vista de PlaEntrenament
 
 usuari_save_route = UsuariViewSet.as_view({"post": "save_route"})
 usuari_get_routes = UsuariViewSet.as_view({"get": "get_saved_routes"})

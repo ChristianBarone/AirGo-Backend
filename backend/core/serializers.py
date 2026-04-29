@@ -94,7 +94,6 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ['diesDurada', 'numEntrenamentsSetmanals', 'templates']
-        fields = ["titol"]
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
