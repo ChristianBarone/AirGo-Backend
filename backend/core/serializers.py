@@ -15,7 +15,7 @@ class UsuariSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
-        if len(value) <= 3:
+        if len(value) < 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
 
@@ -97,6 +97,12 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ['id', 'diesDurada', 'numEntrenamentsSetmanals', 'templates']
+
+
+class ExerciciSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercici
+        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points']
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
