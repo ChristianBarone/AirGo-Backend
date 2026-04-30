@@ -9,7 +9,7 @@ from ..services.plans_entrenament import create_plan
 
 
 class PlaEntrenamentViewSet(viewsets.ModelViewSet):
-    queryset = PlaEntrenament.objects.all().prefetch_related('templates__instancies_exercici')
+    queryset = PlaEntrenament.objects.all().prefetch_related('templates')
     serializer_class = PlaEntrenamentSerializer
 
     # ELIMINAR LUEGO (logica repetida)
