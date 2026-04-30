@@ -126,26 +126,6 @@ class PlaEntrenament(models.Model):
     numEntrenamentsSetmanals = models.IntegerField()
     templates = models.ManyToManyField("TemplateExercici", related_name="plans")
 
-class Exercici(models.Model):
-    dataInici = models.DateTimeField(default=timezone.now)
-    dataFi = models.DateTimeField(null=True, blank=True)
-    completat = models.BooleanField(default=False)
-    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
-
-    template_origen = models.ForeignKey (
-        "TemplateExercici",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="instancies_exercici",
-    )
-
-class ExerciciExterior(Exercici):
-    dist_feta_km = models.FloatField()
-    calories = models.FloatField()
-
-class ExerciciRuta(ExerciciExterior):
-    dist_objectiu_km = models.FloatField()
 
 class TemplateExercici(models.Model):
     nom = models.CharField(max_length=100)
@@ -155,6 +135,21 @@ class TemplateExercici(models.Model):
 
     def __str__(self):
         return self.nom
+
+
+class Exercici(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="exercicis"
+    )
+    distance_meters = models.FloatField(default=0.0)
+    duration_seconds = models.IntegerField(default=0)
+    avg_speed_kmh = models.FloatField(default=0.0)
+    route_points = models.JSONField(default=list)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuari.username} - {self.distance_meters}m"
 
 
 class UsuariRuta(models.Model):

@@ -99,6 +99,12 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
         fields = ['id', 'diesDurada', 'numEntrenamentsSetmanals', 'templates']
 
 
+class ExerciciSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercici
+        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points']
+
+
 class UsuariRutaSerializer(serializers.ModelSerializer):
     route = RouteSerializer(read_only=True)
     route_id = serializers.PrimaryKeyRelatedField(

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
-from ..models import ExerciciRuta, Exercici
+from ..models import Exercici
 
 #     Filtra templates que contienen 'ini',
 #     Fuerza un plan de 2 semanas con 3 sesiones/semana
