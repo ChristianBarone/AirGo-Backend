@@ -3,9 +3,9 @@ from django.utils import timezone
 from ..models import Exercici  # Solo importamos Exercici
 
 def create_ini_plan(usuari, pla):
-    templates_ini = pla.templates
+    templates_ini = pla.templates.all()
 
-    if not templates_ini.exists().all():
+    if not templates_ini.exists():
         return []
 
     total_entrenamientos = 6
