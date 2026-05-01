@@ -71,10 +71,24 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=1.5):
 _EcoRouteRequest = inline_serializer(
     name="EcoRouteRequest",
     fields={
-        "lat_start": serializers.FloatField(help_text="Latitud del origen (ej: 41.385)"),
-        "lon_start": serializers.FloatField(help_text="Longitud del origen (ej: 2.173)"),
-        "lat_end": serializers.FloatField(help_text="Latitud del destino"),
-        "lon_end": serializers.FloatField(help_text="Longitud del destino"),
+        "profile": serializers.ChoiceField(
+            choices=[
+                ("eco_bike", "Bicicleta"),
+                ("eco_foot", "A peu"),
+                ("running", "Running")
+            ],
+            default="eco_bike",
+            help_text="Tria el mitjà de transport per a la ruta."
+        ),
+        "points": serializers.ListField(
+            child=serializers.ListField(
+                child=serializers.FloatField(),
+                min_length=2,
+                max_length=2
+            ),
+            help_text="Llista de punts: [[lat, lon], [lat, lon], ...]",
+            min_length=2
+        ),
     },
 )
 
@@ -124,7 +138,7 @@ class EcoRouteView(APIView):
         tags=["Routes"],
         summary="Generar ruta ecològica",
         description=(
-            "Calcula la ruta óptima entre dos puntos minimizando la exposición a la contaminación. "
+            "Calcula la ruta óptima entre puntos minimizando la exposición a la contaminación. "
             "Internamente consulta las estaciones de calidad del aire, llama a GraphHopper con un "
             "modelo de prioridad personalizado y persiste la ruta en base de datos. "
             "Devuelve la geometría GeoJSON de la ruta junto con los segmentos de contaminación."
