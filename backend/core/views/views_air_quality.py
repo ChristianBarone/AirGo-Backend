@@ -87,6 +87,44 @@ class AirQualityView(APIView):
 
 class ExternalAirQualityView(APIView):
 
+    @extend_schema(
+        tags=["External Services"],
+        summary="Consulta de qualitat de l'aire per a serveis externs",
+        description=(
+                "Retorna l'AQI del punt més proper a les coordenades donades. "
+                "Si es proporciona un radi, també retorna una llista de zones properes amb millor qualitat de l'aire. "
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="lat",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Latitud (ex: 41.38)",
+            ),
+            OpenApiParameter(
+                name="lon",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Longitud (ex: 2.17)",
+            ),
+            OpenApiParameter(
+                name="radius",
+                type=OpenApiTypes.FLOAT,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Radi de cerca en km. Si no s'envia, només es retorna el punt local.",
+            ),
+        ],
+        responses={
+            200: OpenApiResponse(
+                description="Dades de qualitat de l'aire obtingudes correctament",
+            ),
+            400: OpenApiResponse(description="Falten paràmetres obligatoris")
+        }
+    )
+
     def get(self, request):
         lat = request.query_params.get("lat")
         lon = request.query_params.get("lon")
