@@ -201,6 +201,7 @@ class EcoRouteView(APIView):
                 distance=distance_km,
                 air_quality=avg_aqi,
                 is_safe=avg_aqi < 100,
+                route_points=punts_gh
             )
 
             return Response(

@@ -117,6 +117,7 @@ class Route(models.Model):
     distance = models.FloatField()
     air_quality = models.FloatField()
     is_safe = models.BooleanField(default=True)
+    route_points = models.JSONField(default=list)
 
     def __str__(self):
         return self.name
