@@ -66,7 +66,8 @@ jobs:
           GOOGLE_CLIENT_ID: "test-id"
         run: |
           cd backend
-          python manage.py test
+          python manage.py makemigrations
+          pytest --cov=core --cov-report=term
   deploy:
     name: Deploy to server
     needs: CI

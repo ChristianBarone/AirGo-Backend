@@ -12,9 +12,6 @@ from ..services.navigation import get_eco_route
 from ..models import Route
 
 
-# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
-
-# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
 
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distancia en KM entre dos puntos de la Tierra."""
@@ -153,9 +150,14 @@ class EcoRouteView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Obtener el perfil (por defecto: eco_bike)
+        profile = data.get("profile", "eco_bike")
+
         try:
             stations = get_air_quality_near(start["lat"], start["lon"], radio_km=20)
-            route_data = get_eco_route(start, end, stations)
+
+            # 3. Llamar a GraphHopper con el perfil especificado
+            route_data = get_eco_route(start, end, stations, profile=profile)
 
             if "paths" not in route_data:
                 return Response(

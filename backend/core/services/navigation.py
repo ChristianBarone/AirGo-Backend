@@ -1,8 +1,22 @@
 import requests
 
 
-def get_eco_route(start_coords, end_coords, stations):
+def get_eco_route(start_coords, end_coords, stations, profile="eco_bike"):
+    """
+    Calcula una ruta ecològica evitant zones de alta contaminació.
+
+    Args:
+        start_coords: {"lat": float, "lon": float}
+        end_coords: {"lat": float, "lon": float}
+        stations: Llista de estacions de qualitat de l'aire
+        profile: "eco_bike", "eco_foot", o "running" (default: "eco_bike")
+    """
     gh_url = "http://graphhopper:8989/route"
+
+    # Validar profile
+    valid_profiles = ["eco_bike", "eco_foot", "running"]
+    if profile not in valid_profiles:
+        return {"error": f"Perfil no vàlid. Usa: {', '.join(valid_profiles)}"}
 
     stations = sorted(stations, key=lambda x: x["aqi"], reverse=True)[:5]
 
@@ -46,7 +60,7 @@ def get_eco_route(start_coords, end_coords, stations):
             [start_coords["lon"], start_coords["lat"]],
             [end_coords["lon"], end_coords["lat"]],
         ],
-        "profile": "eco_bike",
+        "profile": profile,
         "ch.disable": True,
         "points_encoded": False,
         "details": ["time", "distance"],

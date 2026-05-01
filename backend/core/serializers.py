@@ -108,3 +108,4 @@ class UsuariRutaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuariRuta
         fields = ["id", "route", "route_id", "saved_at"]
+
