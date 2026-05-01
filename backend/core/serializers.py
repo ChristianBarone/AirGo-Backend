@@ -15,7 +15,7 @@ class UsuariSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
-        if len(value) < 3:
+        if len(value) <= 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
 
@@ -102,3 +102,4 @@ class UsuariRutaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuariRuta
         fields = ["id", "route", "route_id", "saved_at"]
+

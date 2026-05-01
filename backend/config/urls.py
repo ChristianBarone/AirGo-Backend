@@ -37,7 +37,6 @@ urlpatterns = [
     path("auth/google/", GoogleLoginView.as_view(), name="auth-google"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
-    path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
     path('zone-air-quality/', ExternalAirQualityView.as_view(), name='external-air-quality'),
     path("bicing/", BicingView.as_view(), name="bicing"),
