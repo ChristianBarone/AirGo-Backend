@@ -3,7 +3,7 @@ from django.utils import timezone
 from ..models import Exercici  # Solo importamos Exercici
 
 def create_ini_plan(usuari, pla):
-    templates_ini = pla.templates.filter(nom__icontains="ini")
+    templates_ini = pla.templates
 
     if not templates_ini.exists():
         return []
