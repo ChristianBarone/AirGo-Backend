@@ -35,7 +35,7 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
 
         if not ejercicios:
             return Response(
-                {"error": "No s'han trobat templates amb el nom 'ini' en aquest pla"},
+                {"error": "No s'han trobat templates en aquest pla"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
