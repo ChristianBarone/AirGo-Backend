@@ -13,7 +13,7 @@ from core.views import health, home, RouteViewSet
 from core.views.views_auth import GoogleLoginView
 from core.views.views_usuari import UsuariViewSet
 from core.views.route_pollution_view import EcoRouteView
-from core.views.views_air_quality import AirQualityView
+from core.views.views_air_quality import AirQualityView, ExternalAirQualityView
 from core.views.views_bicing import BicingView
 from core.views.views_pla_entrenament import PlaEntrenamentViewSet  # Importar PlaEntrenamentViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -37,6 +37,7 @@ urlpatterns = [
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
     path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
+    path('zone-air-quality/', ExternalAirQualityView.as_view(), name='external-air-quality'),
     path("bicing/", BicingView.as_view(), name="bicing"),
     path("api/usuaris/me/routes/save/", usuari_save_route, name="usuari-save-route"),
     path("api/usuaris/me/routes/", usuari_get_routes, name="usuari-get-routes"),

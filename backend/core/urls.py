@@ -4,7 +4,7 @@ from .views import health, home
 from .views.views_auth import GoogleLoginView
 from .views.views_usuari import UsuariViewSet
 from .views.route_pollution_view import EcoRouteView
-from .views.views_air_quality import AirQualityView
+from .views.views_air_quality import AirQualityView, ExternalAirQualityView
 from .views import RouteViewSet
 from .views.views_bicing import BicingView
 from .views.views_pla_entrenament import PlaEntrenamentViewSet
@@ -27,6 +27,7 @@ urlpatterns = [
     path("auth/google/", GoogleLoginView.as_view()),
     path("auth/refresh/", TokenRefreshView.as_view()),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
+    path('zone-air-quality/', ExternalAirQualityView.as_view(), name='external-air-quality'),
     path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="air-quality"),
     path("bicing/", BicingView.as_view(), name="bicing"),
