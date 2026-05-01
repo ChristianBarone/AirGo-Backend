@@ -18,10 +18,15 @@ def create_ini_plan(usuari, pla):
         # Creamos el ejercicio usando SOLO los campos que existen en tu modelo actual
         nuevo_ejercicio = Exercici.objects.create(
             usuari=usuari,
+            template=template,  # ← añadir esto
+            dataInici=timezone.now(),  # ← añadir esto
+            distanciaObjectiu=0.0,
+            distanciaFeta=0.0,
+            completat=False,
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
-            route_points=[] # Lista vacía porque aún no se ha hecho
+            route_points=[]
         )
 
         ejercicios_creados.append(nuevo_ejercicio)

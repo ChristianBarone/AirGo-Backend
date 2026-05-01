@@ -9,7 +9,7 @@ from ..services.plans_entrenament import create_plan
 
 
 class PlaEntrenamentViewSet(viewsets.ModelViewSet):
-    queryset = PlaEntrenament.objects.all().prefetch_related('templates')
+    queryset = PlaEntrenament.objects.all().prefetch_related('templates__instancies_exercici')
     serializer_class = PlaEntrenamentSerializer
 
     # ELIMINAR LUEGO (logica repetida)
@@ -40,7 +40,8 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
             )
 
         # 3. Respondemos con el plan actualizado y sus nuevos ejercicios
-        serializer = self.get_serializer(pla)
+        pla_refresc = PlaEntrenament.objects.prefetch_related('templates__instancies_exercici').get(pk=pla.pk)
+        serializer = self.get_serializer(pla_refresc)
         return Response({
             "message": "Pla d'iniciació creat correctament amb 6 exercicis.",
             "plan": serializer.data
@@ -69,7 +70,8 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
             )
 
         # 3. Respondemos con el plan actualizado y sus nuevos ejercicios
-        serializer = self.get_serializer(pla)
+        pla_refresc = PlaEntrenament.objects.prefetch_related('templates__instancies_exercici').get(pk=pla.pk)
+        serializer = self.get_serializer(pla_refresc)
         return Response({
             "message": f"Pla de seguiment creat correctament amb {len(ejercicios)} exercicis.",
             "plan": serializer.data
