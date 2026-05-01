@@ -15,7 +15,7 @@ graphhopper:
   profiles_ch: []
   profiles_lm: []
 
-  graph.encoded_values: car_access, car_average_speed, country, road_class, roundabout, max_speed, foot_access, foot_average_speed, foot_priority, foot_road_access, bike_access, bike_average_speed, bike_priority, bike_road_access, bike_network, mtb_rating, ferry_speed, road_environment, bike_infrastructure, smoothness, surface, leisure, natural, foot, max_incline
+  graph.encoded_values: car_access, car_average_speed, road_class, road_class_link, roundabout, max_speed, road_environment, road_access, surface, smoothness, bike_network, foot_network
 
   custom_models.directory: /data/custom_models
 

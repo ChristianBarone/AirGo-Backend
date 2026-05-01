@@ -35,4 +35,5 @@ target/
 
 # GraphHopper Data
 graph-cache/
+default-gh/
 *.poly

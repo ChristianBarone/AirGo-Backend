@@ -33,7 +33,6 @@ urlpatterns = [
     path("auth/google/", GoogleLoginView.as_view(), name="auth-google"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
-    path("eco-route/", EcoRouteView.as_view(), name="eco-route"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
     path("bicing/", BicingView.as_view(), name="bicing"),
     path("api/usuaris/me/routes/save/", usuari_save_route, name="usuari-save-route"),

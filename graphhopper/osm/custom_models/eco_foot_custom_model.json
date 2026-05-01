@@ -1,21 +1,13 @@
 {
   "speed": [
     { "if": "road_class == FOOTWAY || road_class == PEDESTRIAN", "limit_to": "5" },
-    { "if": "road_class == RESIDENTIAL", "limit_to": "4.5" },
-    { "if": "road_class == UNCLASSIFIED", "limit_to": "4" },
-    { "if": "road_class == TRACK", "limit_to": "3.5" },
-    { "if": "true", "limit_to": "4" }
+    { "else_if": "road_class == RESIDENTIAL", "limit_to": "4.5" },
+    { "else": "", "limit_to": "4" }
   ],
   "priority": [
     { "if": "road_class == FOOTWAY || road_class == PEDESTRIAN", "multiply_by": "2.5" },
-    { "if": "road_class == TRACK || foot == DESIGNATED", "multiply_by": "2.0" },
-    { "if": "leisure == PARK || natural == WOOD || natural == GRASSLAND", "multiply_by": "2.2" },
-    { "if": "smoothness == EXCELLENT || smoothness == GOOD", "multiply_by": "1.3" },
-    { "if": "surface == ASPHALT || surface == CONCRETE || surface == PAVER_BLOCKS", "multiply_by": "1.1" },
-    { "if": "surface == GRAVEL || surface == UNPAVED || surface == DIRT", "multiply_by": "0.9" },
-    { "if": "road_class == PRIMARY || road_class == SECONDARY", "multiply_by": "0.4" },
-    { "if": "road_class == TRUNK || road_class == MOTORWAY", "multiply_by": "0.1" },
-    { "if": "max_incline > 10", "multiply_by": "0.6" },
-    { "if": "max_incline > 15", "multiply_by": "0.3" }
+    { "else_if": "surface == GRASS || surface == DIRT", "multiply_by": "2.0" },
+    { "else_if": "road_class == MOTORWAY || road_class == TRUNK", "multiply_by": "0.1" },
+    { "else": "", "multiply_by": "1.0" }
   ]
 }
