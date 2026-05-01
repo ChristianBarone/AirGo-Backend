@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, inline_serializer
 from drf_spectacular.types import OpenApiTypes
 
-from ..services.air_quality import get_air_quality_near
+from ..services.air_quality import get_air_quality_near, haversine_km
 
 
 class AirQualityView(APIView):
@@ -83,3 +83,58 @@ class AirQualityView(APIView):
                 {"error": f"Error obteniendo calidad del aire: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+
+class ExternalAirQualityView(APIView):
+
+    def get(self, request):
+        lat = request.query_params.get("lat")
+        lon = request.query_params.get("lon")
+        radius = request.query_params.get("radius")  # Radi per defecte 5km
+
+        if not lat or not lon:
+            return Response(
+                {"error": "Falten els paràmetres 'lat' i 'lon'."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            lat, lon = float(lat), float(lon)
+        except ValueError:
+            return Response({"error": "Formats numèrics incorrectes."}, status=400)
+
+        # Obtenim totes les estacions properes
+        search_radius = float(radius) if radius else 10.0
+        stations = get_air_quality_near(lat, lon, radio_km=search_radius)
+
+        if not stations:
+            return Response({"message": "No hi ha dades disponibles per aquesta zona."}, status=404)
+
+        # Calculem quina estació és la més propera de les que hem trobat
+        for s in stations:
+            s["distance"] = haversine_km(lat, lon, s["geoPoint"]["lat"], s["geoPoint"]["lon"])
+
+        nearest_station = min(stations, key=lambda x: x["distance"])
+
+        response_data = {
+            "point_quality": {
+                "aqi": nearest_station["aqi"],
+                "station": nearest_station["zone"],
+                "distance_km": round(nearest_station["distance"], 2)
+            }
+        }
+
+        # 4. NOMÉS si han passat el paràmetre 'radius', afegim les recomanacions
+        if radius is not None:
+            # Ordenem per millor AQI i agafem les 3 millors zones
+            best_areas = sorted(stations, key=lambda x: x["aqi"])[:3]
+            response_data["recommendations"] = [
+                {
+                    "zone": area["zone"],
+                    "lat": area["geoPoint"]["lat"],
+                    "lon": area["geoPoint"]["lon"],
+                    "aqi": area["aqi"]
+                } for area in best_areas if area["aqi"] < 100
+            ]
+
+        return Response(response_data, status=status.HTTP_200_OK)

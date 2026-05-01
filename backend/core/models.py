@@ -141,16 +141,23 @@ class Exercici(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
+    template = models.ForeignKey(
+        "TemplateExercici", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="instancies_exercici"
+    )
+    dataInici = models.DateTimeField(null=True, blank=True)
+    completat = models.BooleanField(default=False)
+    distanciaObjectiu = models.FloatField(default=0.0)
+    distanciaFeta = models.FloatField(default=0.0)
+    # campos existentes
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
-
 
 class UsuariRuta(models.Model):
     usuari = models.ForeignKey(
