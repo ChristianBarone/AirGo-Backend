@@ -13,6 +13,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from core.views.views_exercici import ExerciciViewSet
+from core.views.views_exercici import TemplateExerciciViewSet
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
@@ -20,6 +21,7 @@ router.register(r"usuaris", UsuariViewSet)
 router.register(r"pla-entrenament", PlaEntrenamentViewSet)
 router.register(r'template-exercici', TemplateExerciciViewSet)
 router.register(r'exercicis', ExerciciViewSet, basename='exercici')
+router.register(r'template-exercici', TemplateExerciciViewSet)
 
 urlpatterns = [
     path("", home, name="home"),
