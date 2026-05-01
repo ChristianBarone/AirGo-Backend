@@ -80,7 +80,10 @@ class TemplateExerciciSerializer(serializers.ModelSerializer):
 
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
-    templates = TemplateExerciciSerializer(many=True, read_only=True)
+    templates = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=TemplateExercici.objects.all()
+    )
 
     class Meta:
         model = PlaEntrenament
