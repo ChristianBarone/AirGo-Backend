@@ -15,7 +15,7 @@ class UsuariSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
-        if len(value) <= 3:
+        if len(value) < 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
 
@@ -64,39 +64,29 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
         fields = ["titol"]
 
 class ExerciciPolymorphicSerializer(serializers.ModelSerializer):
-    # Esto traerá toda la info de las subclases de Exercici (Exterior/Ruta o res)
-    detalls_especifics = serializers.SerializerMethodField()
-
     class Meta:
         model = Exercici
-        fields = ['dataInici', 'dataFi', 'completat', 'tipusExercici', 'detalls_especifics']
+        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points', 'created_at']
 
-    def get_detalls_especifics(self, obj):
-        # Intentamos acceder a las subclases
-        if hasattr(obj, 'exerciciruta'):
-            return {"dist_objectiu_km": obj.exerciciruta.dist_objectiu_km,
-                    "dist_feta_km": obj.exerciciruta.dist_feta_km,
-                    "calories": obj.exerciciruta.calories,}
-        if hasattr(obj, 'exerciciexterior'):
-            return {"dist_feta_km": obj.exerciciexterior.dist_feta_km,
-                    "calories": obj.exerciciexterior.calories}
-        return None
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
-    # Esto traerá todos los ejercicios que tengan este template como 'template_origen'
-    exercicis = ExerciciPolymorphicSerializer(many=True, read_only=True, source='instancies_exercici')
-
     class Meta:
         model = TemplateExercici
-        fields = ['nom', 'descripcio', 'tipusExercici', 'exercicis']
+        fields = ['id', 'nom', 'descripcio', 'tipusExercici']
+
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
-    # Esto traerá todos los Templates presentes en el plan
     templates = TemplateExerciciSerializer(many=True, read_only=True)
 
     class Meta:
         model = PlaEntrenament
         fields = ['id', 'diesDurada', 'numEntrenamentsSetmanals', 'templates']
+
+
+class ExerciciSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercici
+        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points']
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
