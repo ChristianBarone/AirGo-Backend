@@ -62,6 +62,37 @@ class Usuari(models.Model):
         # no se necesita, solo es confirmación
         return hi_ha_canvis
 
+class EstatAmistat(models.TextChoices):
+    PENDING  = "PEN", "Pendent"
+    ACCEPTED = "ACC", "Acceptada"
+    REJECTED = "REJ", "Rebutjada"
+
+
+class Amistat(models.Model):
+    solicitant = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="amistats_enviades"
+    )
+    receptor = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="amistats_rebudes"
+    )
+    estat = models.CharField(
+        max_length=3, choices=EstatAmistat.choices, default=EstatAmistat.PENDING
+    )
+    creat_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["solicitant", "receptor"]
+        constraints = [
+            # Evita que A→B y B→A coexistan
+            models.CheckConstraint(
+                check=~models.Q(solicitant=models.F("receptor")),
+                name="no_self_friendship"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.solicitant} → {self.receptor} ({self.estat})"
+
 
 class Titol(models.Model):
     nom = models.CharField(max_length=100)

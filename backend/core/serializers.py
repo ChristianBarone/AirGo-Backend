@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -38,6 +38,26 @@ class UsuariSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuari
         fields = "__all__"
+
+class AmistatSerializer(serializers.ModelSerializer):
+    # Devuelve info básica del amigo, no del registro de amistad
+    amic = serializers.SerializerMethodField()
+
+    def get_amic(self, obj):
+        # El "amigo" es el otro extremo de la relación
+        request_user_id = self.context.get("request_user_id")
+        amic = obj.receptor if obj.solicitant_id == request_user_id else obj.solicitant
+        return {
+            "id": amic.pk,
+            "username": amic.username,
+            "profile_pic": amic.profile_pic.url if amic.profile_pic else None,
+            "titol": amic.titol,
+            "punts": amic.punts,
+        }
+
+    class Meta:
+        model = Amistat
+        fields = ["id", "estat", "creat_at", "amic"]
 
 
 class GoogleAuthSerializer(serializers.Serializer):
