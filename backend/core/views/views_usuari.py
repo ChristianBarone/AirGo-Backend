@@ -473,7 +473,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
     @action(
         detail=False, methods=["delete"],
         permission_classes=[IsAuthenticated],
-        url_path="me/friends/(?P<amic_id>[^/.]+)",
+        url_path="me/friends/(?P<amic_id>[0-9]+)",
         url_name="me-friends-delete",
     )
     def delete_friend(self, request, amic_id=None):
