@@ -19,6 +19,7 @@ from core.views.views_pla_entrenament import PlaEntrenamentViewSet  # Importar P
 from rest_framework_simplejwt.views import TokenRefreshView
 from core.views.views_exercici import ExerciciViewSet
 from core.views.views_exercici import TemplateExerciciViewSet
+from core.views.views_chat import ConversaViewSet
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
@@ -26,6 +27,7 @@ router.register(r"usuaris", UsuariViewSet)
 router.register(r"pla-entrenament", PlaEntrenamentViewSet)  # Registrar la vista de PlaEntrenament
 router.register(r'exercicis', ExerciciViewSet, basename='exercici')
 router.register(r'template-exercici', TemplateExerciciViewSet)
+router.register(r"conversations", ConversaViewSet, basename="conversa")
 
 usuari_save_route = UsuariViewSet.as_view({"post": "save_route"})
 usuari_get_routes = UsuariViewSet.as_view({"get": "get_saved_routes"})

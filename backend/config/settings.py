@@ -10,6 +10,7 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 # ── Apps ──────────────────────────────────────────────────────────────────────
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -21,6 +22,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "core",
     "corsheaders",
+    "channels",
 ]
 
 # ── Hosts ─────────────────────────────────────────────────────────────────────
@@ -168,4 +170,18 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
     "ROTATE_REFRESH_TOKENS": True,       # ← cada refresh emite nuevo refresh token
     "BLACKLIST_AFTER_ROTATION": True,    # ← invalida el anterior
+}
+
+# ── Channels / WebSocket ──────────────────────────────────────────────────────
+ASGI_APPLICATION = "config.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (os.getenv("REDIS_HOST", "redis"), int(os.getenv("REDIS_PORT", "6379")))
+            ],
+        },
+    }
 }

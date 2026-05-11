@@ -204,3 +204,47 @@ class UsuariRuta(models.Model):
     def __str__(self):
         return f"{self.usuari.username} - {self.route.name}"
 
+class Conversa(models.Model):
+    """
+    Conversación entre exactamente dos usuarios.
+    Siempre guardamos usuari_1.pk < usuari_2.pk para evitar duplicados.
+    """
+    usuari_1 = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="converses_com_1"
+    )
+    usuari_2 = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="converses_com_2"
+    )
+    creada_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari_1", "usuari_2"]
+
+    @staticmethod
+    def entre(u1: "Usuari", u2: "Usuari") -> "Conversa":
+        """Devuelve (o crea) la conversación canónica entre dos usuarios."""
+        a, b = (u1, u2) if u1.pk < u2.pk else (u2, u1)
+        conversa, _ = Conversa.objects.get_or_create(usuari_1=a, usuari_2=b)
+        return conversa
+
+    def __str__(self):
+        return f"Conversa {self.usuari_1} ↔ {self.usuari_2}"
+
+
+class Missatge(models.Model):
+    conversa = models.ForeignKey(
+        Conversa, on_delete=models.CASCADE, related_name="missatges"
+    )
+    emissor = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="missatges_enviats"
+    )
+    contingut = models.TextField()
+    enviat_at = models.DateTimeField(auto_now_add=True)
+    llegit = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["enviat_at"]
+
+    def __str__(self):
+        return f"{self.emissor.username}: {self.contingut[:40]}"
+
