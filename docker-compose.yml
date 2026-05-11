@@ -60,6 +60,14 @@ services:
       - airgo_net
     command: --input /data/cataluna-260317.osm.pbf --config /data/config.yml
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - airgo_net
+
 volumes:
   postgres_data:
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, Conversa, Missatge
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -126,3 +126,37 @@ class UsuariRutaSerializer(serializers.ModelSerializer):
         model = UsuariRuta
         fields = ["id", "route", "route_id", "saved_at"]
 
+
+class MissatgeSerializer(serializers.ModelSerializer):
+    emissor_username = serializers.CharField(source="emissor.username", read_only=True)
+
+    class Meta:
+        model = Missatge
+        fields = ["id", "emissor", "emissor_username", "contingut", "enviat_at", "llegit"]
+
+
+class ConversaSerializer(serializers.ModelSerializer):
+    other_user  = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+
+    def _other(self, obj):
+        uid = self.context["request_user_id"]
+        return obj.usuari_2 if obj.usuari_1_id == uid else obj.usuari_1
+
+    def get_other_user(self, obj):
+        u = self._other(obj)
+        return {"id": u.pk, "username": u.username,
+                "profile_pic": u.profile_pic.url if u.profile_pic else None}
+
+    def get_last_message(self, obj):
+        last = obj.missatges.last()
+        return {"contingut": last.contingut, "enviat_at": last.enviat_at} if last else None
+
+    def get_unread_count(self, obj):
+        uid = self.context["request_user_id"]
+        return obj.missatges.filter(llegit=False).exclude(emissor_id=uid).count()
+
+    class Meta:
+        model = Conversa
+        fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
