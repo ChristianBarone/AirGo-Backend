@@ -4,6 +4,7 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 from django.db import models as dm
+from .services.firebase import send_push_notification
 
 from .models import Amistat, Conversa, EstatAmistat, Missatge, Usuari
 
@@ -94,8 +95,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def _save_missatge(self, contingut):
-        return Missatge.objects.create(
+        missatge = Missatge.objects.create(
             conversa=self.conversa,
             emissor=self.usuari,
             contingut=contingut,
         )
+        # Notificar al receptor si tiene fcm_token
+        receptor = (
+            self.conversa.usuari_2
+            if self.conversa.usuari_1_id == self.usuari.pk
+            else self.conversa.usuari_1
+        )
+        if receptor.fcm_token:
+            send_push_notification(
+                fcm_token=receptor.fcm_token,
+                title=self.usuari.username,
+                body=contingut[:100],
+                data={
+                    "type": "chat",
+                    "conversa_id": str(self.conversa.pk),
+                    "emissor_id": str(self.usuari.pk),
+                },
+            )
+        return missatge

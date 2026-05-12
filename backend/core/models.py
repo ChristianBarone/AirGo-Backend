@@ -32,7 +32,7 @@ class Usuari(models.Model):
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
     insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
-
+    fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
 
     def __str__(self):

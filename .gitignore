@@ -37,3 +37,6 @@ target/
 graph-cache/
 default-gh/
 *.poly
+
+#firebase
+firebase-credentials.json
