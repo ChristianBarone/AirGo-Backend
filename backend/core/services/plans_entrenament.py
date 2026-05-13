@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from django.utils import timezone
-from ..models import Exercici
+from ..models import Exercici, SensacioExercici
+
 
 #     Filtra templates que contienen 'ini',
 #     Fuerza un plan de 2 semanas con 3 sesiones/semana
@@ -28,29 +29,19 @@ def create_ini_plan(usuari, pla):
 
         # 3. Calculamos la fecha específica para este ejercicio
         fecha_ejercicio = fecha_inicio_plan + timedelta(days=dias_relativos[i])
-        fecha_fin_ejercicio = fecha_ejercicio + timedelta(hours=1)  # Duración estimada: 1h
 
         # 4. Generar ejercicio
-        if template.tipusExercici in ["CAM", "BIC"]:
-            nuevo_ejercicio = ExerciciRuta.objects.create(
-                template_origen=template,
-                tipusExercici=template.tipusExercici,
-                dataInici=fecha_ejercicio,
-                dataFi=fecha_fin_ejercicio,
-                dist_feta_km=0.0,
-                calories=0.0,
-                dist_objectiu_km=5.0,
-                completat=False
-            )
-        else:
-            nuevo_ejercicio = Exercici.objects.create(
-                template_origen=template,
-                tipusExercici=template.tipusExercici,
-                dataInici=fecha_ejercicio,
-                dataFi=fecha_fin_ejercicio,
-                completat=False
-            )
-
+        nuevo_ejercicio = Exercici.objects.create(
+            usuari=usuari,
+            template = template,
+            distance_meters=0.0,
+            duration_seconds=0,
+            avg_speed_kmh=0.0,
+            route_points=[],
+            created_at = fecha_ejercicio,
+            sensacio=SensacioExercici.NORMAL,
+            comentari_sensacio=""
+        )
         ejercicios_creados.append(nuevo_ejercicio)
 
     # Actualizamos los datos del plan
@@ -98,29 +89,19 @@ def create_plan(usuari, pla):
 
         # 3. Calculamos la fecha específica para este ejercicio
         fecha_ejercicio = fecha_inicio_plan + timedelta(days=dias_relativos[i])
-        fecha_fin_ejercicio = fecha_ejercicio + timedelta(hours=1)  # Duración estimada: 1h
 
         # 4. Generar ejercicio
-        if template.tipusExercici in ["CAM", "BIC"]:
-            nuevo_ejercicio = ExerciciRuta.objects.create(
-                template_origen=template,
-                tipusExercici=template.tipusExercici,
-                dataInici=fecha_ejercicio,
-                dataFi=fecha_fin_ejercicio,
-                dist_feta_km=0.0,
-                calories=0.0,
-                dist_objectiu_km=5.0,
-                completat=False
-            )
-        else:
-            nuevo_ejercicio = Exercici.objects.create(
-                template_origen=template,
-                tipusExercici=template.tipusExercici,
-                dataInici=fecha_ejercicio,
-                dataFi=fecha_fin_ejercicio,
-                completat=False
-            )
-
+        nuevo_ejercicio = Exercici.objects.create(
+            usuari=usuari,
+            template = template,
+            distance_meters=0.0,
+            duration_seconds=0,
+            avg_speed_kmh=0.0,
+            route_points=[],
+            created_at = fecha_ejercicio,
+            sensacio=SensacioExercici.NORMAL,
+            comentari_sensacio=""
+        )
         ejercicios_creados.append(nuevo_ejercicio)
 
     # Actualizamos los datos del plan

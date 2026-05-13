@@ -20,7 +20,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='inicialitzar-pla-ini')
     def inicialitzar_pla_ini(self, request, pk=None):
         #Endpoint: POST /api/pla-entrenament/{id}/inicialitzar-pla-ini/
-        # 1. Obtenemos el plan y el usuario
         pla = self.get_object()
 
         try:
@@ -30,7 +29,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
                 {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # 2. Llamamos a tu función lógica
         ejercicios = create_ini_plan(usuari, pla)
 
         if not ejercicios:
@@ -39,7 +37,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 3. Respondemos con el plan actualizado y sus nuevos ejercicios
         serializer = self.get_serializer(pla)
         return Response({
             "message": "Pla d'iniciació creat correctament amb 6 exercicis.",
@@ -49,7 +46,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='inicialitzar-pla-seg')
     def inicialitzar_pla_seg(self, request, pk=None):
         # Endpoint: POST /api/pla-entrenament/{id}/inicialitzar-pla-seg/
-        # 1. Obtenemos el plan y el usuario
         pla = self.get_object()
 
         try:
@@ -59,7 +55,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
                 {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        # 2. Llamamos a tu función lógica
         ejercicios = create_plan(usuari, pla)
 
         if not ejercicios:
@@ -68,7 +63,6 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 3. Respondemos con el plan actualizado y sus nuevos ejercicios
         serializer = self.get_serializer(pla)
         return Response({
             "message": f"Pla de seguiment creat correctament amb {len(ejercicios)} exercicis.",

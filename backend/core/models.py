@@ -18,6 +18,13 @@ class DifPlaEntrenament(models.TextChoices):
     NORMAL = "NOR", "Normal"
     INTENS = "INT", "Intens"
 
+class SensacioExercici(models.TextChoices):
+    MOLTBE = "MBE", "Molt bé"
+    BE = "BE", "bé"
+    NORMAL = "NOR", "Normal"
+    CANSAT = "CA", "Cansat"
+    MOLTCANSAT = "MCA", "Molt cansat"
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -141,12 +148,17 @@ class Exercici(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
+    template = models.ForeignKey(
+        TemplateExercici, on_delete=models.CASCADE, related_name="templates"
+    )
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField()
+    sensacio = models.CharField(max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL)
+    comentari_sensacio = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
