@@ -493,3 +493,33 @@ class UsuariViewSet(viewsets.ModelViewSet):
             return Response({"error": "Amistat no trobada"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        tags=["Usuaris · Me"],
+        summary="Registrar FCM token",
+        description="El dispositivo Android llama a este endpoint al iniciar sesión para registrar su token de notificaciones push.",
+        request=inline_serializer(
+            name="FcmTokenRequest",
+            fields={"fcm_token": serializers.CharField()},
+        ),
+        responses={200: OpenApiResponse(description="Token registrado")},
+    )
+    @action(
+        detail=False, methods=["patch"],
+        permission_classes=[IsAuthenticated],
+        url_path="me/fcm-token",
+        url_name="me-fcm-token",
+    )
+    def update_fcm_token(self, request):
+        try:
+            usuari = self._get_usuari_from_token(request)
+        except Usuari.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+        fcm_token = request.data.get("fcm_token", "").strip()
+        if not fcm_token:
+            return Response({"error": "fcm_token és obligatori"}, status=status.HTTP_400_BAD_REQUEST)
+
+        usuari.fcm_token = fcm_token
+        usuari.save(update_fields=["fcm_token"])
+        return Response({"message": "Token registrat correctament"})
