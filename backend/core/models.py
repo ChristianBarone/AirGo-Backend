@@ -25,6 +25,11 @@ class SensacioExercici(models.TextChoices):
     CANSAT = "CA", "Cansat"
     MOLTCANSAT = "MCA", "Molt cansat"
 
+class CategoriaObjectiu(models.TextChoices):
+    BRONZE = "BRO", "Bronze"
+    PLATA = "PLA", "Plata"
+    OR = "OR", "Or"
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -128,6 +133,20 @@ class Route(models.Model):
     def __str__(self):
         return self.name
 
+class UsuariRuta(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
+    )
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari", "route"]
+
+    def __str__(self):
+        return f"{self.usuari.username} - {self.route.name}"
+
+
 class PlaEntrenament(models.Model):
     diesDurada = models.IntegerField()
     numEntrenamentsSetmanals = models.IntegerField()
@@ -149,30 +168,16 @@ class Exercici(models.Model):
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
     template = models.ForeignKey(
-        TemplateExercici, on_delete=models.CASCADE, related_name="templates"
+        TemplateExercici, on_delete=models.CASCADE, related_name="exercicis"
     )
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
 
-    created_at = models.DateTimeField()
+    dataIni = models.DateTimeField()
     sensacio = models.CharField(max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL)
     comentari_sensacio = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
-
-
-class UsuariRuta(models.Model):
-    usuari = models.ForeignKey(
-        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
-    )
-    route = models.ForeignKey(Route, on_delete=models.CASCADE)
-    saved_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ["usuari", "route"]
-
-    def __str__(self):
-        return f"{self.usuari.username} - {self.route.name}"

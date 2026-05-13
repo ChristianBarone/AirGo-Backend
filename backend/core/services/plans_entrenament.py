@@ -38,7 +38,7 @@ def create_ini_plan(usuari, pla):
             duration_seconds=0,
             avg_speed_kmh=0.0,
             route_points=[],
-            created_at = fecha_ejercicio,
+            dataIni = fecha_ejercicio,
             sensacio=SensacioExercici.NORMAL,
             comentari_sensacio=""
         )
@@ -98,7 +98,7 @@ def create_plan(usuari, pla):
             duration_seconds=0,
             avg_speed_kmh=0.0,
             route_points=[],
-            created_at = fecha_ejercicio,
+            dataIni = fecha_ejercicio,
             sensacio=SensacioExercici.NORMAL,
             comentari_sensacio=""
         )

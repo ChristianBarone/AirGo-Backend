@@ -66,7 +66,7 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
 class ExerciciSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercici
-        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points', 'created_at', 'sensacio', 'comentari_sensacio']
+        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points', 'dataIni', 'sensacio', 'comentari_sensacio']
 
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
