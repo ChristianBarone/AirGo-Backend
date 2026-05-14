@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import health, home
@@ -28,6 +29,7 @@ router.register(r"conversations", ConversaViewSet, basename="conversa")
 router.register(r"forums", ForumViewSet, basename="forum")
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view()),

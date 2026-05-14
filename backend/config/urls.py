@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
@@ -36,6 +37,7 @@ usuari_get_routes = UsuariViewSet.as_view({"get": "get_saved_routes"})
 usuari_delete_route = UsuariViewSet.as_view({"delete": "delete_saved_route"})
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view(), name="auth-google"),
