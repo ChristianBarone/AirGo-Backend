@@ -150,7 +150,7 @@ class UsuariRuta(models.Model):
 class PlaEntrenament(models.Model):
     diesDurada = models.IntegerField()
     numEntrenamentsSetmanals = models.IntegerField()
-    templates = models.ManyToManyField("TemplateExercici", related_name="plans")
+    templates = models.ManyToManyField("TemplateExercici", blank=True, related_name="plans")
 
 
 class TemplateExercici(models.Model):
@@ -168,7 +168,7 @@ class Exercici(models.Model):
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
     template = models.ForeignKey(
-        TemplateExercici, on_delete=models.CASCADE, related_name="exercicis"
+        TemplateExercici, on_delete=models.CASCADE, related_name="exercicis", null=True, blank=True
     )
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
