@@ -248,3 +248,30 @@ class Missatge(models.Model):
     def __str__(self):
         return f"{self.emissor.username}: {self.contingut[:40]}"
 
+
+class Forum(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.CharField(max_length=500, blank=True)
+    creat_per = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="forums_creats"
+    )
+    creat_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nom
+
+
+class ForumFavorit(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="forums_favorits"
+    )
+    forum = models.ForeignKey(
+        Forum, on_delete=models.CASCADE, related_name="favorits"
+    )
+    afegit_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari", "forum"]
+
+    def __str__(self):
+        return f"{self.usuari.username} → {self.forum.nom}"
