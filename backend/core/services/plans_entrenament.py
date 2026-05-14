@@ -59,27 +59,22 @@ def create_plan(usuari, pla):
     if not templates.exists():
         return []
 
-    dias_relativos = []
+    # siempre empieza a las 8 AM
+    fecha_inicio_plan = (timezone.now() + timedelta(days=1)).replace(
+        hour=8, minute=0, second=0, microsecond=0
+    )
 
-    # 2 por semana
-    if usuari.dificultatPla == "REL":
-        # Lun, Jue cada semana
+    # NOR es default
+    dias_relativos = [0, 2, 4, 7, 9, 11, 14, 16, 18]
+    # 2. Asignación de días según dificultad
+    dificultad = getattr(usuari, 'dificultatPla', 'NOR')
+
+    if dificultad == "REL":
         dias_relativos = [0, 3, 7, 10, 14, 17]
-
-    # 3 por semana
-    elif usuari.dificultatPla == "NOR":
-        # Lun, Mie, Vie cada semana
-        dias_relativos = [0, 2, 4, 7, 9, 11, 14, 16, 18]
-    # 4 por semana
-    else :
-        # Lun, Mie, Vie, Sab cada semana
+    elif dificultad == "INT":
         dias_relativos = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 18, 19]
 
-
     ejercicios_creados = []
-
-    # Siempre comienza a las 8am
-    fecha_inicio_plan = (timezone.now() + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
 
 
     # 3. Creación cíclica
