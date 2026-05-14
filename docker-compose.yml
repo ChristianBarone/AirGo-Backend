@@ -30,6 +30,7 @@ services:
       - "8080"
     volumes:
       - ./backend/core/migrations:/app/core/migrations
+      - static_volume:/app/staticfiles
     networks:
       - airgo_net
 
@@ -43,6 +44,7 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles
     networks:
       - airgo_net
 
@@ -70,6 +72,7 @@ services:
 
 volumes:
   postgres_data:
+  static_volume:
 
 
 networks:
