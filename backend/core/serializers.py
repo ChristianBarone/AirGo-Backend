@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, Conversa, Missatge
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, Conversa, Missatge, Forum, ForumFavorit
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -150,3 +150,19 @@ class ConversaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversa
         fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
+
+class ForumSerializer(serializers.ModelSerializer):
+    creat_per = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Forum
+        fields = ["id", "nom", "descripcio", "creat_per", "creat_at"]
+        read_only_fields = ["id", "creat_per", "creat_at"]
+
+
+class ForumFavoritSerializer(serializers.ModelSerializer):
+    forum = ForumSerializer(read_only=True)
+
+    class Meta:
+        model = ForumFavorit
+        fields = ["id", "forum", "afegit_at"]
