@@ -13,9 +13,13 @@ from drf_spectacular.utils import (
 )
 from drf_spectacular.types import OpenApiTypes
 
-from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat
-from ..serializers import UsuariSerializer, UsuariTitolSerializer, UsuariRutaSerializer, AmistatSerializer
+from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat, Insignia
+from ..serializers import UsuariSerializer, UsuariTitolSerializer, UsuariRutaSerializer, AmistatSerializer, \
+    UsuariInsigniaSerializer, PuntLogSerializer
 from django.db import models as django_models
+
+from ..services.gamificacio import gestionar_puntuacio_i_insignies
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -523,3 +527,30 @@ class UsuariViewSet(viewsets.ModelViewSet):
         usuari.fcm_token = fcm_token
         usuari.save(update_fields=["fcm_token"])
         return Response({"message": "Token registrat correctament"})
+
+    @extend_schema(tags=["Usuaris · Me"], summary="Llistar les meves insígnies")
+    @action(detail=False, methods=["get"], url_path="me/insignies", permission_classes=[IsAuthenticated])
+    def get_my_insignies(self, request):
+        usuari = self._get_usuari_from_token(request)
+        registres = usuari.insignies_guanyades.select_related('insignia')
+        serializer = UsuariInsigniaSerializer(registres, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(tags=["Usuaris · Me"], summary="Comprovar i otorgar noves insígnies")
+    @action(detail=False, methods=["post"], url_path="me/premis/check", permission_classes=[IsAuthenticated])
+    def check_gamificacio(self, request):
+        usuari = self._get_usuari_from_token(request)
+        noves_insignies = gestionar_puntuacio_i_insignies(usuari)
+        return Response({
+            "status": "success",
+            "new_badges": noves_insignies,
+            "current_points": usuari.punts,
+            "current_streak": usuari.ratxa
+        })
+
+    @action(detail=False, methods=["get"], url_path="me/points-log")
+    def get_points_log(self, request):
+        usuari = self._get_usuari_from_token(request)
+        logs = usuari.logs_punts.all().order_by('-data')[:20]
+        serializer = PuntLogSerializer(logs, many=True)
+        return Response(serializer.data)

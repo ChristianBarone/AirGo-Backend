@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, Conversa, Missatge
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, \
+    Conversa, Missatge, Insignia, UsuariInsignia, PuntLog
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -160,3 +161,22 @@ class ConversaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversa
         fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
+
+
+class InsigniaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Insignia
+        fields = ["id", "nom", "descripcio", "nom_icona", "tipus", "valor_requerit"]
+
+
+class UsuariInsigniaSerializer(serializers.ModelSerializer):
+    insignia = InsigniaSerializer(read_only=True)
+
+    class Meta:
+        model = UsuariInsignia
+        fields = ["insignia", "data_guanyada"]
+
+class PuntLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PuntLog
+        fields = ["quantitat", "motiu", "data"]

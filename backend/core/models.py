@@ -31,9 +31,9 @@ class Usuari(models.Model):
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
-    insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
     fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
+    ultima_activitat = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.username
@@ -247,4 +247,30 @@ class Missatge(models.Model):
 
     def __str__(self):
         return f"{self.emissor.username}: {self.contingut[:40]}"
+
+
+class Insignia(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.TextField()
+    nom_icona = models.CharField(max_length=50, default="")
+
+    tipus = models.CharField(max_length=50)
+    valor_requerit = models.FloatField()
+
+    def __str__(self):
+        return self.nom
+
+class UsuariInsignia(models.Model):
+    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name="insignies_guanyades")
+    insignia = models.ForeignKey(Insignia, on_delete=models.CASCADE)
+    class Meta:
+        unique_together = ["usuari", "insignia"]
+    def __str__(self):
+        return f"{self.usuari.username} - {self.insignia.nom}"
+
+class PuntLog(models.Model):
+    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name="logs_punts")
+    quantitat = models.IntegerField()
+    motiu = models.CharField(max_length=255)
+    data = models.DateTimeField(auto_now_add=True)
 

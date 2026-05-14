@@ -5,6 +5,8 @@ from ..models import Exercici, Usuari
 from ..serializers import ExerciciSerializer
 from ..models import TemplateExercici
 from ..serializers import TemplateExerciciSerializer
+from ..services.gamificacio import gestionar_puntuacio_i_insignies
+
 
 class ExerciciViewSet(viewsets.ModelViewSet):
     queryset = Exercici.objects.all()
@@ -24,6 +26,20 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         # Al guardar, le pegamos el usuario que viene del token
         usuari = self._get_usuari_from_token(self.request)
         serializer.save(usuari=usuari)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+
+        # Si l'exercici s'ha marcat com a completat en aquesta crida
+        if request.data.get('completat') is True:
+            usuari = self._get_usuari_from_token(request)
+            noves_insignies = gestionar_puntuacio_i_insignies(usuari)
+
+            response.data["new_badges"] = noves_insignies
+            response.data["points_earned"] = usuari.punts
+            response.data["current_streak"] = usuari.ratxa
+
+        return response
 
 class TemplateExerciciViewSet(viewsets.ModelViewSet):
     queryset = TemplateExercici.objects.all()
