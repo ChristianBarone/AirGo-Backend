@@ -175,9 +175,9 @@ class Exercici(models.Model):
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
 
-    dataIni = models.DateTimeField()
+    dataIni = models.DateTimeField(blank=True, null=True)
     sensacio = models.CharField(max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL)
-    comentari_sensacio = models.TextField(blank=True)
+    comentari_sensacio = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
