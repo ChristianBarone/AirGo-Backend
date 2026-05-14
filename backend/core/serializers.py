@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta
+from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, Conversa, Missatge
 import os
 
 class UsuariSerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class UsuariSerializer(serializers.ModelSerializer):
         value = value.strip()
         if not value:
             raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
-        if len(value) < 3:
+        if len(value) <= 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
 
@@ -38,6 +38,26 @@ class UsuariSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuari
         fields = "__all__"
+
+class AmistatSerializer(serializers.ModelSerializer):
+    # Devuelve info básica del amigo, no del registro de amistad
+    amic = serializers.SerializerMethodField()
+
+    def get_amic(self, obj):
+        # El "amigo" es el otro extremo de la relación
+        request_user_id = self.context.get("request_user_id")
+        amic = obj.receptor if obj.solicitant_id == request_user_id else obj.solicitant
+        return {
+            "id": amic.pk,
+            "username": amic.username,
+            "profile_pic": amic.profile_pic.url if amic.profile_pic else None,
+            "titol": amic.titol,
+            "punts": amic.punts,
+        }
+
+    class Meta:
+        model = Amistat
+        fields = ["id", "estat", "creat_at", "amic"]
 
 
 class GoogleAuthSerializer(serializers.Serializer):
@@ -95,3 +115,38 @@ class UsuariRutaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuariRuta
         fields = ["id", "route", "route_id", "saved_at"]
+
+
+class MissatgeSerializer(serializers.ModelSerializer):
+    emissor_username = serializers.CharField(source="emissor.username", read_only=True)
+
+    class Meta:
+        model = Missatge
+        fields = ["id", "emissor", "emissor_username", "contingut", "enviat_at", "llegit"]
+
+
+class ConversaSerializer(serializers.ModelSerializer):
+    other_user  = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+
+    def _other(self, obj):
+        uid = self.context["request_user_id"]
+        return obj.usuari_2 if obj.usuari_1_id == uid else obj.usuari_1
+
+    def get_other_user(self, obj):
+        u = self._other(obj)
+        return {"id": u.pk, "username": u.username,
+                "profile_pic": u.profile_pic.url if u.profile_pic else None}
+
+    def get_last_message(self, obj):
+        last = obj.missatges.last()
+        return {"contingut": last.contingut, "enviat_at": last.enviat_at} if last else None
+
+    def get_unread_count(self, obj):
+        uid = self.context["request_user_id"]
+        return obj.missatges.filter(llegit=False).exclude(emissor_id=uid).count()
+
+    class Meta:
+        model = Conversa
+        fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]

@@ -12,9 +12,6 @@ from ..services.navigation import get_eco_route
 from ..models import Route
 
 
-# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
-
-# ── Helpers de cálculo (sin cambios) ─────────────────────────────────────────
 
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distancia en KM entre dos puntos de la Tierra."""
@@ -28,7 +25,7 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
-def generar_segments_contaminacio(punts_ruta, stations, radi_km=0.4):
+def generar_segments_contaminacio(punts_ruta, stations, radi_km=1.5):
     """
     Recibe la lista de coordenadas de la ruta y las estaciones,
     y devuelve los segmentos de contaminación en formato GraphHopper:
@@ -43,11 +40,17 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=0.4):
 
     for idx, punt in enumerate(punts_ruta):
         lon, lat = punt[0], punt[1]
-        punt_aqi = 0
+        punt_aqi = 20
+        distancia_minima = float('inf')
+
         for st in stations:
             dist = haversine(lat, lon, st["geoPoint"]["lat"], st["geoPoint"]["lon"])
-            if dist <= radi_km:
-                punt_aqi = max(punt_aqi, st["aqi"])
+            if dist < distancia_minima:
+                distancia_minima = dist
+                temp_aqi = st["aqi"]
+
+        if distancia_minima <= radi_km:
+            punt_aqi = temp_aqi
 
         if current_aqi is None:
             current_aqi = punt_aqi
@@ -56,8 +59,9 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=0.4):
             start_idx = idx
             current_aqi = punt_aqi
 
-    if current_aqi is not None and start_idx < len(punts_ruta) - 1:
-        details.append([start_idx, len(punts_ruta) - 1, current_aqi])
+
+
+    details.append([start_idx, len(punts_ruta) - 1, current_aqi])
 
     return details
 
@@ -67,10 +71,24 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=0.4):
 _EcoRouteRequest = inline_serializer(
     name="EcoRouteRequest",
     fields={
-        "lat_start": serializers.FloatField(help_text="Latitud del origen (ej: 41.385)"),
-        "lon_start": serializers.FloatField(help_text="Longitud del origen (ej: 2.173)"),
-        "lat_end": serializers.FloatField(help_text="Latitud del destino"),
-        "lon_end": serializers.FloatField(help_text="Longitud del destino"),
+        "profile": serializers.ChoiceField(
+            choices=[
+                ("eco_bike", "Bicicleta"),
+                ("eco_foot", "A peu"),
+                ("running", "Running")
+            ],
+            default="eco_bike",
+            help_text="Tria el mitjà de transport per a la ruta."
+        ),
+        "points": serializers.ListField(
+            child=serializers.ListField(
+                child=serializers.FloatField(),
+                min_length=2,
+                max_length=2
+            ),
+            help_text="Llista de punts: [[lat, lon], [lat, lon], ...]",
+            min_length=2
+        ),
     },
 )
 
@@ -118,9 +136,9 @@ class EcoRouteView(APIView):
 
     @extend_schema(
         tags=["Routes"],
-        summary="Generar ruta ecológica",
+        summary="Generar ruta ecològica",
         description=(
-            "Calcula la ruta óptima entre dos puntos minimizando la exposición a la contaminación. "
+            "Calcula la ruta óptima entre puntos minimizando la exposición a la contaminación. "
             "Internamente consulta las estaciones de calidad del aire, llama a GraphHopper con un "
             "modelo de prioridad personalizado y persiste la ruta en base de datos. "
             "Devuelve la geometría GeoJSON de la ruta junto con los segmentos de contaminación."
@@ -138,24 +156,17 @@ class EcoRouteView(APIView):
     )
     def post(self, request):
         data = request.data
+        raw_points = data.get("points", [])
+        profile = data.get("profile", "eco_bike")
+
+        if len(raw_points) < 2:
+            return Response({"error": "Calen com a mínim dos punts (inici i final)."}, status=400)
 
         try:
-            start = {"lat": float(data.get("lat_start")), "lon": float(data.get("lon_start"))}
-            end = {"lat": float(data.get("lat_end")), "lon": float(data.get("lon_end"))}
-        except (TypeError, ValueError, KeyError):
-            return Response(
-                {
-                    "error": (
-                        "Coordenadas lat_start, lon_start, lat_end, lon_end "
-                        "son obligatorias y deben ser números."
-                    )
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            stations = get_air_quality_near(raw_points[0][0], raw_points[0][1], radio_km=20)
 
-        try:
-            stations = get_air_quality_near(start["lat"], start["lon"], radio_km=20)
-            route_data = get_eco_route(start, end, stations)
+            # 3. Llamar a GraphHopper con el perfil especificado
+            route_data = get_eco_route(raw_points, stations, profile=profile)
 
             if "paths" not in route_data:
                 return Response(
@@ -169,22 +180,28 @@ class EcoRouteView(APIView):
             path = route_data['paths'][0]
             punts_gh = path.get("points", {}).get("coordinates", [])
             segments_colors = generar_segments_contaminacio(
-                punts_gh, stations, radi_km=0.4
+                punts_gh, stations
             )
 
+            if segments_colors:
+                suma_aqi = sum(s[2] * (s[1] - s[0] + 1) for s in segments_colors)
+                avg_aqi = round(suma_aqi / len(punts_gh), 1)
+            else:
+                avg_aqi = 20.0
+
             distance_km = round(path.get("distance", 0) / 1000, 3)
-            avg_aqi = round(sum(s["aqi"] for s in stations) / len(stations), 2) if stations else 0.0
 
             route_obj = Route.objects.create(
                 name=(
                     f"{data.get('lat_start')},{data.get('lon_start')} "
                     f"→ {data.get('lat_end')},{data.get('lon_end')}"
                 ),
-                start_location=f"{start['lat']},{start['lon']}",
-                end_location=f"{end['lat']},{end['lon']}",
+                start_location=f"{raw_points[0]}",
+                end_location=f"{raw_points[-1]}",
                 distance=distance_km,
                 air_quality=avg_aqi,
                 is_safe=avg_aqi < 100,
+                route_points=punts_gh
             )
 
             return Response(
@@ -199,7 +216,7 @@ class EcoRouteView(APIView):
                     },
                     "geometry": {
                         "type": "LineString",
-                        "coordinates": [[p[1], p[0]] for p in path["points"]["coordinates"]],
+                        "coordinates": punts_gh,
                     },
                     "pollution_details": segments_colors,
                     "stations_info": stations,

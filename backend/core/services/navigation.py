@@ -1,8 +1,21 @@
 import requests
 
 
-def get_eco_route(start_coords, end_coords, stations):
+def get_eco_route(coords_list, stations, profile="eco_bike"):
+    """
+    Calcula una ruta ecològica evitant zones d'alta contaminació.
+
+    Args:
+        coords_list: Llista de punts [[lat, lon], [lat, lon], ...]
+        stations: Llista d'estacions de qualitat de l'aire
+        profile: "eco_bike", "eco_foot", o "running" (default: "eco_bike")
+    """
     gh_url = "http://graphhopper:8989/route"
+
+    # Validar profile
+    valid_profiles = ["eco_bike", "eco_foot", "running"]
+    if profile not in valid_profiles:
+        return {"error": f"Perfil no vàlid. Usa: {', '.join(valid_profiles)}"}
 
     stations = sorted(stations, key=lambda x: x["aqi"], reverse=True)[:5]
 
@@ -36,17 +49,20 @@ def get_eco_route(start_coords, end_coords, stations):
         features_list.append(feature)
 
         # Reglas de prioridad (usando números, no strings)
-        if aqi > 100:
-            priority_rules.append({"if": f"in_{area_id}", "multiply_by": 0.1})
+        if aqi > 150:
+            factor = 0.2  # Evita-ho quasi sempre
+        elif aqi > 100:
+            factor = 0.5  # Evita-ho si no és una volta molt gran
         elif aqi > 50:
-            priority_rules.append({"if": f"in_{area_id}", "multiply_by": 0.5})
+            factor = 0.8  # Penalització lleu
+        else:
+            factor = 1.0  # Aire net, cap penalització
+
+        priority_rules.append({"if": f"in_{area_id}", "multiply_by": str(factor)})
 
     payload = {
-        "points": [
-            [start_coords["lon"], start_coords["lat"]],
-            [end_coords["lon"], end_coords["lat"]],
-        ],
-        "profile": "eco_bike",
+        "points": [[c[1], c[0]] for c in coords_list],
+        "profile": profile,
         "ch.disable": True,
         "points_encoded": False,
         "details": ["time", "distance"],
@@ -55,13 +71,6 @@ def get_eco_route(start_coords, end_coords, stations):
             "areas": {"type": "FeatureCollection", "features": features_list},
         },
     }
-
-    # try:
-    # response = requests.post(gh_url, json=payload)
-    # response.raise_for_status()
-    # return response.json()
-    # except Exception as e:
-    # return {"error": str(e)}
 
     try:
         response = requests.post(gh_url, json=payload)

@@ -44,7 +44,7 @@ class Usuari(models.Model):
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
     insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
-
+    fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
 
     def __str__(self):
@@ -73,6 +73,37 @@ class Usuari(models.Model):
             self.save()
         # no se necesita, solo es confirmación
         return hi_ha_canvis
+
+class EstatAmistat(models.TextChoices):
+    PENDING  = "PEN", "Pendent"
+    ACCEPTED = "ACC", "Acceptada"
+    REJECTED = "REJ", "Rebutjada"
+
+
+class Amistat(models.Model):
+    solicitant = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="amistats_enviades"
+    )
+    receptor = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="amistats_rebudes"
+    )
+    estat = models.CharField(
+        max_length=3, choices=EstatAmistat.choices, default=EstatAmistat.PENDING
+    )
+    creat_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["solicitant", "receptor"]
+        constraints = [
+            # Evita que A→B y B→A coexistan
+            models.CheckConstraint(
+                check=~models.Q(solicitant=models.F("receptor")),
+                name="no_self_friendship"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.solicitant} → {self.receptor} ({self.estat})"
 
 
 class Titol(models.Model):
@@ -129,6 +160,7 @@ class Route(models.Model):
     distance = models.FloatField()
     air_quality = models.FloatField()
     is_safe = models.BooleanField(default=True)
+    route_points = models.JSONField(default=list)
 
     def __str__(self):
         return self.name
@@ -181,3 +213,61 @@ class Exercici(models.Model):
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
+
+class UsuariRuta(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
+    )
+    route = models.ForeignKey(Route, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari", "route"]
+
+    def __str__(self):
+        return f"{self.usuari.username} - {self.route.name}"
+
+class Conversa(models.Model):
+    """
+    Conversación entre exactamente dos usuarios.
+    Siempre guardamos usuari_1.pk < usuari_2.pk para evitar duplicados.
+    """
+    usuari_1 = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="converses_com_1"
+    )
+    usuari_2 = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="converses_com_2"
+    )
+    creada_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari_1", "usuari_2"]
+
+    @staticmethod
+    def entre(u1: "Usuari", u2: "Usuari") -> "Conversa":
+        """Devuelve (o crea) la conversación canónica entre dos usuarios."""
+        a, b = (u1, u2) if u1.pk < u2.pk else (u2, u1)
+        conversa, _ = Conversa.objects.get_or_create(usuari_1=a, usuari_2=b)
+        return conversa
+
+    def __str__(self):
+        return f"Conversa {self.usuari_1} ↔ {self.usuari_2}"
+
+
+class Missatge(models.Model):
+    conversa = models.ForeignKey(
+        Conversa, on_delete=models.CASCADE, related_name="missatges"
+    )
+    emissor = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="missatges_enviats"
+    )
+    contingut = models.TextField()
+    enviat_at = models.DateTimeField(auto_now_add=True)
+    llegit = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["enviat_at"]
+
+    def __str__(self):
+        return f"{self.emissor.username}: {self.contingut[:40]}"
+

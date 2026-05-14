@@ -35,4 +35,8 @@ target/
 
 # GraphHopper Data
 graph-cache/
+default-gh/
 *.poly
+
+#firebase
+firebase-credentials.json
