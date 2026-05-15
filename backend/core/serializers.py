@@ -198,7 +198,6 @@ class ConversaSerializer(serializers.ModelSerializer):
         fields = ["chat_id", "other_user", "last_message", "unread_count", "creada_at"]
 
 
-
 class ForumSerializer(serializers.ModelSerializer):
     creat_per = serializers.PrimaryKeyRelatedField(read_only=True)
 
