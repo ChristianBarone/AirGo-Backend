@@ -188,9 +188,15 @@ class ConversaSerializer(serializers.ModelSerializer):
         uid = self.context["request_user_id"]
         return obj.missatges.filter(llegit=False).exclude(emissor_id=uid).count()
 
+    chat_id = serializers.SerializerMethodField()
+
+    def get_chat_id(self, obj):
+        return f"{obj.usuari_1.pk}-{obj.usuari_2.pk}"
+
     class Meta:
         model = Conversa
-        fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
+        fields = ["chat_id", "other_user", "last_message", "unread_count", "creada_at"]
+
 
 
 class ForumSerializer(serializers.ModelSerializer):

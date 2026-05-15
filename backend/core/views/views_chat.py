@@ -25,10 +25,27 @@ from ..serializers import ConversaSerializer, MissatgeSerializer
 )
 class ConversaViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
+    lookup_value_regex = r"\d+-\d+"
 
     def _me(self, request):
         google_id = request.auth.get("google_id")
         return Usuari.objects.get(google_id=google_id)
+
+    def _get_conversa(self, composite_id: str):
+        try:
+            a, b = map(int, composite_id.split("-"))
+        except ValueError:
+            return None, Response(
+                {"error": "Format d'ID invàlid. Esperat: {id1}-{id2}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        id1, id2 = (a, b) if a < b else (b, a)
+        try:
+            return Conversa.objects.get(usuari_1__pk=id1, usuari_2__pk=id2), None
+        except Conversa.DoesNotExist:
+            return None, Response(
+                {"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND
+            )
 
     def list(self, request):
         usuari = self._me(request)
