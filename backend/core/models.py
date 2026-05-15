@@ -21,20 +21,6 @@ class DifPlaEntrenament(models.TextChoices):
     INTENS = "INT", "Intens"
 
 
-class SensacioExercici(models.TextChoices):
-    MOLTBE = "MBE", "Molt bé"
-    BE = "BE", "bé"
-    NORMAL = "NOR", "Normal"
-    CANSAT = "CA", "Cansat"
-    MOLTCANSAT = "MCA", "Molt cansat"
-
-
-class CategoriaObjectiu(models.TextChoices):
-    BRONZE = "BRO", "Bronze"
-    PLATA = "PLA", "Plata"
-    OR = "OR", "Or"
-
-
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -179,9 +165,7 @@ class Route(models.Model):
 class PlaEntrenament(models.Model):
     diesDurada = models.IntegerField()
     numEntrenamentsSetmanals = models.IntegerField()
-    templates = models.ManyToManyField(
-        "TemplateExercici", blank=True, related_name="plans"
-    )
+    templates = models.ManyToManyField("TemplateExercici", related_name="plans")
 
 
 class TemplateExercici(models.Model):
@@ -201,22 +185,22 @@ class Exercici(models.Model):
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
     template = models.ForeignKey(
-        TemplateExercici,
-        on_delete=models.CASCADE,
-        related_name="exercicis",
+        "TemplateExercici",
+        on_delete=models.SET_NULL,
         null=True,
         blank=True,
+        related_name="instancies_exercici",
     )
+    dataInici = models.DateTimeField(null=True, blank=True)
+    completat = models.BooleanField(default=False)
+    distanciaObjectiu = models.FloatField(default=0.0)
+    distanciaFeta = models.FloatField(default=0.0)
+    # campos existentes
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
-
-    dataIni = models.DateTimeField(blank=True, null=True)
-    sensacio = models.CharField(
-        max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL
-    )
-    comentari_sensacio = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
