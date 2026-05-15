@@ -146,17 +146,24 @@ class ConversaViewSet(viewsets.GenericViewSet):
             404: OpenApiResponse(description="Missatge no trobat"),
         },
     )
-    @action(detail=False, methods=["delete"], url_path="messages/(?P<missatge_id>[^/.]+)")
+    @action(
+        detail=False, methods=["delete"], url_path="messages/(?P<missatge_id>[^/.]+)"
+    )
     def delete_message(self, request, missatge_id=None):
         usuari = self._me(request)
 
         try:
             missatge = Missatge.objects.get(pk=missatge_id)
         except Missatge.DoesNotExist:
-            return Response({"error": "Missatge no trobat"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Missatge no trobat"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if missatge.emissor != usuari:
-            return Response({"error": "No pots eliminar aquest missatge"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No pots eliminar aquest missatge"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         missatge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
