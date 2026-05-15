@@ -4,7 +4,12 @@ from rest_framework import serializers
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, inline_serializer
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse,
+    inline_serializer,
+)
 from drf_spectacular.types import OpenApiTypes
 
 from ..services.air_quality import get_air_quality_near, haversine_km
@@ -49,8 +54,12 @@ class AirQualityView(APIView):
                 name="AirQualityStation",
                 many=True,
                 fields={
-                    "zone": serializers.CharField(help_text="Nombre de la zona / estación"),
-                    "aqi": serializers.FloatField(help_text="Índice de calidad del aire (AQI)"),
+                    "zone": serializers.CharField(
+                        help_text="Nombre de la zona / estación"
+                    ),
+                    "aqi": serializers.FloatField(
+                        help_text="Índice de calidad del aire (AQI)"
+                    ),
                     "geoPoint": inline_serializer(
                         name="GeoPoint",
                         fields={
@@ -60,8 +69,12 @@ class AirQualityView(APIView):
                     ),
                 },
             ),
-            400: OpenApiResponse(description="Parámetros lat, lon o radio no numéricos"),
-            500: OpenApiResponse(description="Error interno al consultar la fuente de datos"),
+            400: OpenApiResponse(
+                description="Parámetros lat, lon o radio no numéricos"
+            ),
+            500: OpenApiResponse(
+                description="Error interno al consultar la fuente de datos"
+            ),
         },
     )
     def get(self, request):
@@ -95,7 +108,7 @@ class ExternalAirQualityView(APIView):
         if not lat or not lon:
             return Response(
                 {"error": "Falten els paràmetres 'lat' i 'lon'."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -108,11 +121,15 @@ class ExternalAirQualityView(APIView):
         stations = get_air_quality_near(lat, lon, radio_km=search_radius)
 
         if not stations:
-            return Response({"message": "No hi ha dades disponibles per aquesta zona."}, status=404)
+            return Response(
+                {"message": "No hi ha dades disponibles per aquesta zona."}, status=404
+            )
 
         # Calculem quina estació és la més propera de les que hem trobat
         for s in stations:
-            s["distance"] = haversine_km(lat, lon, s["geoPoint"]["lat"], s["geoPoint"]["lon"])
+            s["distance"] = haversine_km(
+                lat, lon, s["geoPoint"]["lat"], s["geoPoint"]["lon"]
+            )
 
         nearest_station = min(stations, key=lambda x: x["distance"])
 
@@ -120,7 +137,7 @@ class ExternalAirQualityView(APIView):
             "point_quality": {
                 "aqi": nearest_station["aqi"],
                 "station": nearest_station["zone"],
-                "distance_km": round(nearest_station["distance"], 2)
+                "distance_km": round(nearest_station["distance"], 2),
             }
         }
 
@@ -133,8 +150,10 @@ class ExternalAirQualityView(APIView):
                     "zone": area["zone"],
                     "lat": area["geoPoint"]["lat"],
                     "lon": area["geoPoint"]["lon"],
-                    "aqi": area["aqi"]
-                } for area in best_areas if area["aqi"] < 100
+                    "aqi": area["aqi"],
+                }
+                for area in best_areas
+                if area["aqi"] < 100
             ]
 
         return Response(response_data, status=status.HTTP_200_OK)
