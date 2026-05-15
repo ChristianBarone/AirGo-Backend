@@ -8,15 +8,18 @@ class Idioma(models.TextChoices):
     ES = "ES", "Español"
     ENG = "ENG", "English"
 
+
 class TExercici(models.TextChoices):
     CAMINAR = "CAM", "Caminar"
     BICI = "BIC", "Bici"
     ALTRES = "ALT", "Altres"
 
+
 class DifPlaEntrenament(models.TextChoices):
     RELAXAT = "REL", "Relaxat"
     NORMAL = "NOR", "Normal"
     INTENS = "INT", "Intens"
+
 
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -27,7 +30,11 @@ class Usuari(models.Model):
     pes = models.FloatField()
     altura = models.FloatField()
     ratxa = models.IntegerField()
-    dificultatPla = models.CharField(max_length=3, choices=DifPlaEntrenament.choices, default=DifPlaEntrenament.NORMAL)
+    dificultatPla = models.CharField(
+        max_length=3,
+        choices=DifPlaEntrenament.choices,
+        default=DifPlaEntrenament.NORMAL,
+    )
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
@@ -62,8 +69,9 @@ class Usuari(models.Model):
         # no se necesita, solo es confirmación
         return hi_ha_canvis
 
+
 class EstatAmistat(models.TextChoices):
-    PENDING  = "PEN", "Pendent"
+    PENDING = "PEN", "Pendent"
     ACCEPTED = "ACC", "Acceptada"
     REJECTED = "REJ", "Rebutjada"
 
@@ -86,7 +94,7 @@ class Amistat(models.Model):
             # Evita que A→B y B→A coexistan
             models.CheckConstraint(
                 check=~models.Q(solicitant=models.F("receptor")),
-                name="no_self_friendship"
+                name="no_self_friendship",
             )
         ]
 
@@ -153,6 +161,7 @@ class Route(models.Model):
     def __str__(self):
         return self.name
 
+
 class PlaEntrenament(models.Model):
     diesDurada = models.IntegerField()
     numEntrenamentsSetmanals = models.IntegerField()
@@ -163,7 +172,9 @@ class TemplateExercici(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField(blank=True)
     # Cambiar default si hace falta
-    tipusExercici = models.CharField(max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR)
+    tipusExercici = models.CharField(
+        max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR
+    )
 
     def __str__(self):
         return self.nom
@@ -174,8 +185,11 @@ class Exercici(models.Model):
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
     )
     template = models.ForeignKey(
-        "TemplateExercici", on_delete=models.SET_NULL, null=True, blank=True,
-        related_name="instancies_exercici"
+        "TemplateExercici",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="instancies_exercici",
     )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
@@ -191,6 +205,7 @@ class Exercici(models.Model):
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
 
+
 class UsuariRuta(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="rutes_guardades"
@@ -204,11 +219,13 @@ class UsuariRuta(models.Model):
     def __str__(self):
         return f"{self.usuari.username} - {self.route.name}"
 
+
 class Conversa(models.Model):
     """
     Conversación entre exactamente dos usuarios.
     Siempre guardamos usuari_1.pk < usuari_2.pk para evitar duplicados.
     """
+
     usuari_1 = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="converses_com_1"
     )
@@ -265,9 +282,7 @@ class ForumFavorit(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="forums_favorits"
     )
-    forum = models.ForeignKey(
-        Forum, on_delete=models.CASCADE, related_name="favorits"
-    )
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE, related_name="favorits")
     afegit_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

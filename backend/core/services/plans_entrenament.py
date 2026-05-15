@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 from ..models import Exercici  # Solo importamos Exercici
 
+
 def create_ini_plan(usuari, pla):
     templates_ini = pla.templates.all()
 
@@ -26,7 +27,7 @@ def create_ini_plan(usuari, pla):
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
-            route_points=[]
+            route_points=[],
         )
 
         ejercicios_creados.append(nuevo_ejercicio)
@@ -38,6 +39,7 @@ def create_ini_plan(usuari, pla):
     usuari.plans.add(pla)
 
     return ejercicios_creados
+
 
 def create_plan(usuari, pla):
     templates = pla.templates.all()
@@ -63,7 +65,7 @@ def create_plan(usuari, pla):
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
-            route_points=[]
+            route_points=[],
         )
 
         ejercicios_creados.append(nuevo_ejercicio)

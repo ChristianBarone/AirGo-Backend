@@ -69,21 +69,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def chat_missatge(self, event):
         """Handler invocado por group_send; reenvía el mensaje a este WebSocket."""
-        await self.send(text_data=json.dumps({
-            "id":               event["id"],
-            "emissor_id":       event["emissor_id"],
-            "emissor_username": event["emissor_username"],
-            "contingut":        event["contingut"],
-            "enviat_at":        event["enviat_at"],
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "id": event["id"],
+                    "emissor_id": event["emissor_id"],
+                    "emissor_username": event["emissor_username"],
+                    "contingut": event["contingut"],
+                    "enviat_at": event["enviat_at"],
+                }
+            )
+        )
 
     # ── DB helpers (sync → async) ─────────────────────────────────────────────
 
     @database_sync_to_async
     def _son_amics(self, uid, other_id):
         return Amistat.objects.filter(
-            dm.Q(solicitant_id=uid, receptor_id=other_id) |
-            dm.Q(solicitant_id=other_id, receptor_id=uid),
+            dm.Q(solicitant_id=uid, receptor_id=other_id)
+            | dm.Q(solicitant_id=other_id, receptor_id=uid),
             estat=EstatAmistat.ACCEPTED,
         ).exists()
 
