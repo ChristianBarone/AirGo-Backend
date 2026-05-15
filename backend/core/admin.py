@@ -81,14 +81,12 @@ class ExerciciAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "usuari",
-        "template",
-        "dataIni",
-        "distance_meters",
-        "duration_seconds",
-        "sensacio",
+        "dataInici",
+        "completat",
+        "distanciaObjectiu",
+        "distanciaFeta",
     )
-    list_filter = ("sensacio", "template__tipusExercici")
-    search_fields = ("usuari__username",)
+    list_filter = ("completat",)
 
 
 # ── Chat y Mensajes ───────────────────────────────────────────────────────────
