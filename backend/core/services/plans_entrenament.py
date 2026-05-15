@@ -19,7 +19,9 @@ def create_ini_plan(usuari, pla):
 
     # MAYBE: preguntar en el cuestionario dias y horas preferentes
     # Plan comienza a las 8am
-    fecha_inicio_plan = (timezone.now() + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
+    fecha_inicio_plan = (timezone.now() + timedelta(days=1)).replace(
+        hour=8, minute=0, second=0, microsecond=0
+    )
     # Siempre Semana 1: Lun, Mie, Vie; Semana 2: Lun, Mie, Vie
     dias_relativos = [0, 2, 4, 7, 9, 11]
 
@@ -33,14 +35,14 @@ def create_ini_plan(usuari, pla):
         # 4. Generar ejercicio
         nuevo_ejercicio = Exercici.objects.create(
             usuari=usuari,
-            template = template,
+            template=template,
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
             route_points=[],
-            dataIni = fecha_ejercicio,
+            dataIni=fecha_ejercicio,
             sensacio=SensacioExercici.NORMAL,
-            comentari_sensacio=""
+            comentari_sensacio="",
         )
         ejercicios_creados.append(nuevo_ejercicio)
 
@@ -51,6 +53,7 @@ def create_ini_plan(usuari, pla):
     usuari.plans.add(pla)
 
     return ejercicios_creados
+
 
 #     Plan de 3 semanas
 #     Entrenamientos por semana influenciado por dificultatPla
@@ -67,7 +70,7 @@ def create_plan(usuari, pla):
     # NOR es default
     dias_relativos = [0, 2, 4, 7, 9, 11, 14, 16, 18]
     # 2. Asignación de días según dificultad
-    dificultad = getattr(usuari, 'dificultatPla', 'NOR')
+    dificultad = getattr(usuari, "dificultatPla", "NOR")
 
     if dificultad == "REL":
         dias_relativos = [0, 3, 7, 10, 14, 17]
@@ -75,7 +78,6 @@ def create_plan(usuari, pla):
         dias_relativos = [0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 18, 19]
 
     ejercicios_creados = []
-
 
     # 3. Creación cíclica
     for i in range(len(dias_relativos)):
@@ -88,14 +90,14 @@ def create_plan(usuari, pla):
         # 4. Generar ejercicio
         nuevo_ejercicio = Exercici.objects.create(
             usuari=usuari,
-            template = template,
+            template=template,
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
             route_points=[],
-            dataIni = fecha_ejercicio,
+            dataIni=fecha_ejercicio,
             sensacio=SensacioExercici.NORMAL,
-            comentari_sensacio=""
+            comentari_sensacio="",
         )
         ejercicios_creados.append(nuevo_ejercicio)
 

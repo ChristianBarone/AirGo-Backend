@@ -7,37 +7,55 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0004_remove_exerciciruta_exerciciexterior_ptr_and_more'),
+        ("core", "0004_remove_exerciciruta_exerciciexterior_ptr_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='exercici',
-            name='created_at',
+            model_name="exercici",
+            name="created_at",
         ),
         migrations.AddField(
-            model_name='exercici',
-            name='comentari_sensacio',
+            model_name="exercici",
+            name="comentari_sensacio",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='exercici',
-            name='dataIni',
+            model_name="exercici",
+            name="dataIni",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='exercici',
-            name='sensacio',
-            field=models.CharField(choices=[('MBE', 'Molt bé'), ('BE', 'bé'), ('NOR', 'Normal'), ('CA', 'Cansat'), ('MCA', 'Molt cansat')], default='NOR', max_length=3),
+            model_name="exercici",
+            name="sensacio",
+            field=models.CharField(
+                choices=[
+                    ("MBE", "Molt bé"),
+                    ("BE", "bé"),
+                    ("NOR", "Normal"),
+                    ("CA", "Cansat"),
+                    ("MCA", "Molt cansat"),
+                ],
+                default="NOR",
+                max_length=3,
+            ),
         ),
         migrations.AddField(
-            model_name='exercici',
-            name='template',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='exercicis', to='core.templateexercici'),
+            model_name="exercici",
+            name="template",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="exercicis",
+                to="core.templateexercici",
+            ),
         ),
         migrations.AlterField(
-            model_name='plaentrenament',
-            name='templates',
-            field=models.ManyToManyField(blank=True, related_name='plans', to='core.templateexercici'),
+            model_name="plaentrenament",
+            name="templates",
+            field=models.ManyToManyField(
+                blank=True, related_name="plans", to="core.templateexercici"
+            ),
         ),
     ]

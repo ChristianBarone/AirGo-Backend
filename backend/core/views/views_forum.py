@@ -15,6 +15,7 @@ class ForumViewSet(ModelViewSet):
     POST /api/forums/        → crea (creat_per des del token)
     DEL  /api/forums/{id}/   → elimina (només el creador)
     """
+
     http_method_names = ["get", "post", "delete", "head", "options"]
 
     def get_queryset(self):
@@ -68,7 +69,9 @@ class UsuariForumsFavoritsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         forum = get_object_or_404(Forum, pk=forum_id)
-        favorit, created = ForumFavorit.objects.get_or_create(usuari=usuari, forum=forum)
+        favorit, created = ForumFavorit.objects.get_or_create(
+            usuari=usuari, forum=forum
+        )
         if not created:
             return Response(
                 {"detail": "Aquest fòrum ja és als teus favorits."},

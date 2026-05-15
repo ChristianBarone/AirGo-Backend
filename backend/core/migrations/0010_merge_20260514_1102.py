@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('core', '0005_remove_exercici_created_at_and_more'),
-        ('core', '0009_usuari_fcm_token'),
+        ("core", "0005_remove_exercici_created_at_and_more"),
+        ("core", "0009_usuari_fcm_token"),
     ]
 
-    operations = [
-    ]
+    operations = []

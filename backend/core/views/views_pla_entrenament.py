@@ -7,9 +7,8 @@ from ..services.plans_entrenament import create_ini_plan
 from ..services.plans_entrenament import create_plan
 
 
-
 class PlaEntrenamentViewSet(viewsets.ModelViewSet):
-    queryset = PlaEntrenament.objects.all().prefetch_related('templates__exercicis')
+    queryset = PlaEntrenament.objects.all().prefetch_related("templates__exercicis")
     serializer_class = PlaEntrenamentSerializer
 
     # ELIMINAR LUEGO (logica repetida)
@@ -17,9 +16,9 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
         google_id = request.auth.get("google_id")  # <-- leer del token
         return Usuari.objects.get(google_id=google_id)
 
-    @action(detail=True, methods=['post'], url_path='inicialitzar-pla-ini')
+    @action(detail=True, methods=["post"], url_path="inicialitzar-pla-ini")
     def inicialitzar_pla_ini(self, request, pk=None):
-        #Endpoint: POST /api/pla-entrenament/{id}/inicialitzar-pla-ini/
+        # Endpoint: POST /api/pla-entrenament/{id}/inicialitzar-pla-ini/
         pla = self.get_object()
 
         try:
@@ -34,16 +33,19 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
         if not ejercicios:
             return Response(
                 {"error": "No s'han trobat templates amb el nom 'ini' en aquest pla"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(pla)
-        return Response({
-            "message": "Pla d'iniciació creat correctament amb 6 exercicis.",
-            "plan": serializer.data
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "message": "Pla d'iniciació creat correctament amb 6 exercicis.",
+                "plan": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
-    @action(detail=True, methods=['post'], url_path='inicialitzar-pla-seg')
+    @action(detail=True, methods=["post"], url_path="inicialitzar-pla-seg")
     def inicialitzar_pla_seg(self, request, pk=None):
         # Endpoint: POST /api/pla-entrenament/{id}/inicialitzar-pla-seg/
         pla = self.get_object()
@@ -60,11 +62,14 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
         if not ejercicios:
             return Response(
                 {"error": "No s'han trobat templates"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         serializer = self.get_serializer(pla)
-        return Response({
-            "message": f"Pla de seguiment creat correctament amb {len(ejercicios)} exercicis.",
-            "plan": serializer.data
-        }, status=status.HTTP_201_CREATED)
+        return Response(
+            {
+                "message": f"Pla de seguiment creat correctament amb {len(ejercicios)} exercicis.",
+                "plan": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
