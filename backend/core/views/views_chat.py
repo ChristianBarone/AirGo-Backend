@@ -91,12 +91,10 @@ class ConversaViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=["get"], url_path="messages")
     def messages(self, request, pk=None):
         usuari = self._me(request)
-        try:
-            conversa = Conversa.objects.get(pk=pk)
-        except Conversa.DoesNotExist:
-            return Response(
-                {"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND
-            )
+
+        conversa, err = self._get_conversa(pk)
+        if err:
+            return err
 
         if usuari not in (conversa.usuari_1, conversa.usuari_2):
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -125,12 +123,10 @@ class ConversaViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=["patch"], url_path="read")
     def mark_read(self, request, pk=None):
         usuari = self._me(request)
-        try:
-            conversa = Conversa.objects.get(pk=pk)
-        except Conversa.DoesNotExist:
-            return Response(
-                {"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND
-            )
+
+        conversa, err = self._get_conversa(pk)
+        if err:
+            return err
 
         if usuari not in (conversa.usuari_1, conversa.usuari_2):
             return Response(status=status.HTTP_403_FORBIDDEN)
