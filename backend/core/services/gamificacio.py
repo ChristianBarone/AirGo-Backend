@@ -21,20 +21,22 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
         distancia_km = dist_m / 1000
         punts_distancia = int(distancia_km * 10)
 
-        usuari.punts += (punts_base + punts_distancia)
+        usuari.punts += punts_base + punts_distancia
         usuari.save()
 
         PuntLog.objects.create(
             usuari=usuari,
             quantitat=punts_base + punts_distancia,
-            motiu=f"Exercici completat: {distancia_km:.2f} km"
+            motiu=f"Exercici completat: {distancia_km:.2f} km",
         )
 
     qs_anteriors = Exercici.objects.filter(usuari=usuari, completat=True)
     if exercici:
         qs_anteriors = qs_anteriors.exclude(pk=exercici.pk)
 
-    dist_anterior_m = qs_anteriors.aggregate(Sum('distance_meters'))['distance_meters__sum'] or 0
+    dist_anterior_m = (
+        qs_anteriors.aggregate(Sum("distance_meters"))["distance_meters__sum"] or 0
+    )
 
     # SUMEM EL QUE ACABEM DE FER ARA (Truc per saltar-nos el delay de la BD)
     total_dist_acumulada_km = (dist_anterior_m / 1000) + distancia_km
@@ -42,7 +44,9 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     total_ratxa = usuari.ratxa
 
     # Mirem quines medalles NO té
-    ja_guanyades_ids = UsuariInsignia.objects.filter(usuari=usuari).values_list("insignia_id", flat=True)
+    ja_guanyades_ids = UsuariInsignia.objects.filter(usuari=usuari).values_list(
+        "insignia_id", flat=True
+    )
     pendents = Insignia.objects.exclude(id__in=ja_guanyades_ids)
 
     noves_badges = []
@@ -61,11 +65,13 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
 
         if guanyada:
             UsuariInsignia.objects.create(usuari=usuari, insignia=ins)
-            noves_badges.append({
-                "id": ins.id,
-                "nom": ins.nom,
-                "descripcio": ins.descripcio,
-                "icona": ins.icona.url if ins.icona else None
-            })
+            noves_badges.append(
+                {
+                    "id": ins.id,
+                    "nom": ins.nom,
+                    "descripcio": ins.descripcio,
+                    "icona": ins.icona.url if ins.icona else None,
+                }
+            )
 
     return noves_badges

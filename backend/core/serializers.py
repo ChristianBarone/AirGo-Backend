@@ -246,6 +246,7 @@ class UsuariInsigniaSerializer(serializers.ModelSerializer):
         model = UsuariInsignia
         fields = ["insignia", "data_guanyada"]
 
+
 class PuntLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = PuntLog

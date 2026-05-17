@@ -78,7 +78,7 @@ class Usuari(models.Model):
             # Si han passat més de 3 dies sense fer exercici, la ratxa es perd
             if diferencia > 3:
                 self.ratxa = 0
-                self.save(update_fields=['ratxa'])
+                self.save(update_fields=["ratxa"])
                 return True
         return False
 
@@ -304,6 +304,7 @@ class ForumFavorit(models.Model):
     def __str__(self):
         return f"{self.usuari.username} → {self.forum.nom}"
 
+
 class Insignia(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField()
@@ -315,18 +316,25 @@ class Insignia(models.Model):
     def __str__(self):
         return self.nom
 
+
 class UsuariInsignia(models.Model):
-    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name="insignies_guanyades")
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="insignies_guanyades"
+    )
     insignia = models.ForeignKey(Insignia, on_delete=models.CASCADE)
     data_guanyada = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         unique_together = ["usuari", "insignia"]
+
     def __str__(self):
         return f"{self.usuari.username} - {self.insignia.nom}"
 
+
 class PuntLog(models.Model):
-    usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name="logs_punts")
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="logs_punts"
+    )
     quantitat = models.IntegerField()
     motiu = models.CharField(max_length=255)
     data = models.DateTimeField(auto_now_add=True)
-

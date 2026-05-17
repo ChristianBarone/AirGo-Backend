@@ -135,6 +135,7 @@ class TitolAdmin(admin.ModelAdmin):
 class UsuariTitolAdmin(admin.ModelAdmin):
     list_display = ("usuari", "titol")
 
+
 @admin.register(Insignia)
 class InsigniaAdmin(admin.ModelAdmin):
     list_display = ("nom", "tipus", "valor_requerit", "mostrar_icona")
@@ -144,14 +145,20 @@ class InsigniaAdmin(admin.ModelAdmin):
     def mostrar_icona(self, obj):
         if obj.icona:
             url_imatge = obj.icona.url
-            return format_html('<img src="{}" style="width: 40px; height: 40px; object-fit: contain;" />', url_imatge)
+            return format_html(
+                '<img src="{}" style="width: 40px; height: 40px; object-fit: contain;" />',
+                url_imatge,
+            )
         return "Sense icona"
+
     mostrar_icona.short_description = "Previsualització Icona"
+
 
 @admin.register(UsuariInsignia)
 class UsuariInsigniaAdmin(admin.ModelAdmin):
-    list_display = ("usuari", "insignia") # Si has afegit data_guanyada, posa-ho aquí
+    list_display = ("usuari", "insignia")  # Si has afegit data_guanyada, posa-ho aquí
     list_filter = ("insignia",)
+
 
 @admin.register(PuntLog)
 class PuntLogAdmin(admin.ModelAdmin):

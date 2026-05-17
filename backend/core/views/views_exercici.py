@@ -34,7 +34,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         response = super().update(request, *args, **kwargs)
 
         # Si l'exercici s'ha marcat com a completat en aquesta crida
-        if request.data.get('completat') is True and not ja_completat:
+        if request.data.get("completat") is True and not ja_completat:
             usuari = self._get_usuari_from_token(request)
             noves_insignies = gestionar_puntuacio_i_insignies(usuari, exercici=instance)
 
@@ -43,6 +43,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
             response.data["current_streak"] = usuari.ratxa
 
         return response
+
 
 class TemplateExerciciViewSet(viewsets.ModelViewSet):
     queryset = TemplateExercici.objects.all()
