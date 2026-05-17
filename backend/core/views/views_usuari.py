@@ -182,6 +182,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
     def retrieve_profile(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
+            usuari.verificar_i_resetejar_ratxa()
         except Usuari.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=404)
 

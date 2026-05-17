@@ -1,5 +1,6 @@
 import os
 from django.db import models
+from datetime import date
 from django.utils import timezone
 
 
@@ -68,6 +69,18 @@ class Usuari(models.Model):
             self.save()
         # no se necesita, solo es confirmación
         return hi_ha_canvis
+
+    def verificar_i_resetejar_ratxa(self):
+        if self.ultima_activitat:
+            avui = date.today()
+            diferencia = (avui - self.ultima_activitat).days
+
+            # Si han passat més de 3 dies sense fer exercici, la ratxa es perd
+            if diferencia > 3:
+                self.ratxa = 0
+                self.save(update_fields=['ratxa'])
+                return True
+        return False
 
 
 class EstatAmistat(models.TextChoices):
@@ -294,7 +307,7 @@ class ForumFavorit(models.Model):
 class Insignia(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField()
-    nom_icona = models.CharField(max_length=50, default="")
+    icona = models.ImageField(upload_to="insignies", null=True, blank=True)
 
     tipus = models.CharField(max_length=50)
     valor_requerit = models.FloatField()

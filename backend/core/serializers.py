@@ -226,9 +226,17 @@ class ForumFavoritSerializer(serializers.ModelSerializer):
 
 
 class InsigniaSerializer(serializers.ModelSerializer):
+    icona = serializers.SerializerMethodField()
+
+    def get_icona(self, obj):
+        if not obj.icona:
+            return None
+        base_url = os.environ.get("BASE_URL", "http://nattech.fib.upc.edu:40330")
+        return f"{base_url}{obj.icona.url}"
+
     class Meta:
         model = Insignia
-        fields = ["id", "nom", "descripcio", "nom_icona", "tipus", "valor_requerit"]
+        fields = ["id", "nom", "descripcio", "icona", "tipus", "valor_requerit"]
 
 
 class UsuariInsigniaSerializer(serializers.ModelSerializer):
