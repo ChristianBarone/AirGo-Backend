@@ -263,6 +263,7 @@ class Insignia(models.Model):
 class UsuariInsignia(models.Model):
     usuari = models.ForeignKey(Usuari, on_delete=models.CASCADE, related_name="insignies_guanyades")
     insignia = models.ForeignKey(Insignia, on_delete=models.CASCADE)
+    data_guanyada = models.DateTimeField(auto_now_add=True)
     class Meta:
         unique_together = ["usuari", "insignia"]
     def __str__(self):

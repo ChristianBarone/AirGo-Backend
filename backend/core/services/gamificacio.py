@@ -1,7 +1,5 @@
-from django.db import models
 from datetime import date, timedelta
 from ..models import UsuariInsignia, Insignia, PuntLog
-from django.db.models import Sum
 
 def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     # S'executa en acabar un exercici, retorna les insignies guanyades amb l'exercici
