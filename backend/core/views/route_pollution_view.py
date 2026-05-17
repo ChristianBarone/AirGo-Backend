@@ -12,7 +12,6 @@ from ..services.navigation import get_eco_route
 from ..models import Route
 
 
-
 def haversine(lat1, lon1, lat2, lon2):
     """Calcula la distancia en KM entre dos puntos de la Tierra."""
     R = 6371.0
@@ -20,7 +19,9 @@ def haversine(lat1, lon1, lat2, lon2):
     dLon = math.radians(lon2 - lon1)
     a = (
         math.sin(dLat / 2) ** 2
-        + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dLon / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dLon / 2) ** 2
     )
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
@@ -41,7 +42,7 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=1.5):
     for idx, punt in enumerate(punts_ruta):
         lon, lat = punt[0], punt[1]
         punt_aqi = 20
-        distancia_minima = float('inf')
+        distancia_minima = float("inf")
 
         for st in stations:
             dist = haversine(lat, lon, st["geoPoint"]["lat"], st["geoPoint"]["lon"])
@@ -59,8 +60,6 @@ def generar_segments_contaminacio(punts_ruta, stations, radi_km=1.5):
             start_idx = idx
             current_aqi = punt_aqi
 
-
-
     details.append([start_idx, len(punts_ruta) - 1, current_aqi])
 
     return details
@@ -75,19 +74,17 @@ _EcoRouteRequest = inline_serializer(
             choices=[
                 ("eco_bike", "Bicicleta"),
                 ("eco_foot", "A peu"),
-                ("running", "Running")
+                ("running", "Running"),
             ],
             default="eco_bike",
-            help_text="Tria el mitjà de transport per a la ruta."
+            help_text="Tria el mitjà de transport per a la ruta.",
         ),
         "points": serializers.ListField(
             child=serializers.ListField(
-                child=serializers.FloatField(),
-                min_length=2,
-                max_length=2
+                child=serializers.FloatField(), min_length=2, max_length=2
             ),
             help_text="Llista de punts: [[lat, lon], [lat, lon], ...]",
-            min_length=2
+            min_length=2,
         ),
     },
 )
@@ -160,10 +157,14 @@ class EcoRouteView(APIView):
         profile = data.get("profile", "eco_bike")
 
         if len(raw_points) < 2:
-            return Response({"error": "Calen com a mínim dos punts (inici i final)."}, status=400)
+            return Response(
+                {"error": "Calen com a mínim dos punts (inici i final)."}, status=400
+            )
 
         try:
-            stations = get_air_quality_near(raw_points[0][0], raw_points[0][1], radio_km=20)
+            stations = get_air_quality_near(
+                raw_points[0][0], raw_points[0][1], radio_km=20
+            )
 
             # 3. Llamar a GraphHopper con el perfil especificado
             route_data = get_eco_route(raw_points, stations, profile=profile)
@@ -177,11 +178,9 @@ class EcoRouteView(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
 
-            path = route_data['paths'][0]
+            path = route_data["paths"][0]
             punts_gh = path.get("points", {}).get("coordinates", [])
-            segments_colors = generar_segments_contaminacio(
-                punts_gh, stations
-            )
+            segments_colors = generar_segments_contaminacio(punts_gh, stations)
 
             if segments_colors:
                 suma_aqi = sum(s[2] * (s[1] - s[0] + 1) for s in segments_colors)
@@ -201,7 +200,7 @@ class EcoRouteView(APIView):
                 distance=distance_km,
                 air_quality=avg_aqi,
                 is_safe=avg_aqi < 100,
-                route_points=punts_gh
+                route_points=punts_gh,
             )
 
             return Response(

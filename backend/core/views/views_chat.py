@@ -3,7 +3,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, status
 
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiResponse,
+)
 from drf_spectacular.types import OpenApiTypes
 
 from ..models import Conversa, Missatge, Usuari
@@ -20,17 +25,34 @@ from ..serializers import ConversaSerializer, MissatgeSerializer
 )
 class ConversaViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
+    lookup_value_regex = r"\d+-\d+"
 
     def _me(self, request):
         google_id = request.auth.get("google_id")
         return Usuari.objects.get(google_id=google_id)
 
+    def _get_conversa(self, composite_id: str):
+        try:
+            a, b = map(int, composite_id.split("-"))
+        except ValueError:
+            return None, Response(
+                {"error": "Format d'ID invàlid. Esperat: {id1}-{id2}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        id1, id2 = (a, b) if a < b else (b, a)
+        try:
+            return Conversa.objects.get(usuari_1__pk=id1, usuari_2__pk=id2), None
+        except Conversa.DoesNotExist:
+            return None, Response(
+                {"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND
+            )
+
     def list(self, request):
         usuari = self._me(request)
         from django.db import models as dm
+
         converses = (
-            Conversa.objects
-            .filter(dm.Q(usuari_1=usuari) | dm.Q(usuari_2=usuari))
+            Conversa.objects.filter(dm.Q(usuari_1=usuari) | dm.Q(usuari_2=usuari))
             .prefetch_related("missatges")
             .select_related("usuari_1", "usuari_2")
             .order_by("-creada_at")
@@ -69,10 +91,10 @@ class ConversaViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=["get"], url_path="messages")
     def messages(self, request, pk=None):
         usuari = self._me(request)
-        try:
-            conversa = Conversa.objects.get(pk=pk)
-        except Conversa.DoesNotExist:
-            return Response({"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND)
+
+        conversa, err = self._get_conversa(pk)
+        if err:
+            return err
 
         if usuari not in (conversa.usuari_1, conversa.usuari_2):
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -101,15 +123,17 @@ class ConversaViewSet(viewsets.GenericViewSet):
     @action(detail=True, methods=["patch"], url_path="read")
     def mark_read(self, request, pk=None):
         usuari = self._me(request)
-        try:
-            conversa = Conversa.objects.get(pk=pk)
-        except Conversa.DoesNotExist:
-            return Response({"error": "Conversa no trobada"}, status=status.HTTP_404_NOT_FOUND)
+
+        conversa, err = self._get_conversa(pk)
+        if err:
+            return err
 
         if usuari not in (conversa.usuari_1, conversa.usuari_2):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        conversa.missatges.filter(llegit=False).exclude(emissor=usuari).update(llegit=True)
+        conversa.missatges.filter(llegit=False).exclude(emissor=usuari).update(
+            llegit=True
+        )
         return Response({"message": "Missatges marcats com llegits"})
 
     @extend_schema(
@@ -122,17 +146,24 @@ class ConversaViewSet(viewsets.GenericViewSet):
             404: OpenApiResponse(description="Missatge no trobat"),
         },
     )
-    @action(detail=False, methods=["delete"], url_path="messages/(?P<missatge_id>[^/.]+)")
+    @action(
+        detail=False, methods=["delete"], url_path="messages/(?P<missatge_id>[^/.]+)"
+    )
     def delete_message(self, request, missatge_id=None):
         usuari = self._me(request)
 
         try:
             missatge = Missatge.objects.get(pk=missatge_id)
         except Missatge.DoesNotExist:
-            return Response({"error": "Missatge no trobat"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Missatge no trobat"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if missatge.emissor != usuari:
-            return Response({"error": "No pots eliminar aquest missatge"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No pots eliminar aquest missatge"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         missatge.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

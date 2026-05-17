@@ -14,8 +14,14 @@ from drf_spectacular.utils import (
 from drf_spectacular.types import OpenApiTypes
 
 from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat, Insignia
-from ..serializers import UsuariSerializer, UsuariTitolSerializer, UsuariRutaSerializer, AmistatSerializer, \
-    UsuariInsigniaSerializer, PuntLogSerializer
+from ..serializers import (
+    UsuariSerializer,
+    UsuariTitolSerializer,
+    UsuariRutaSerializer,
+    AmistatSerializer,
+    UsuariInsigniaSerializer,
+    PuntLogSerializer,
+)
 from django.db import models as django_models
 
 from ..services.gamificacio import gestionar_puntuacio_i_insignies
@@ -67,7 +73,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
     def _get_usuari_from_token(self, request):
         """Lee el google_id del JWT y devuelve el Usuari correspondiente."""
-        google_id = request.auth.get('google_id')
+        google_id = request.auth.get("google_id")
         return Usuari.objects.get(google_id=google_id)
 
     # ── Acciones custom ───────────────────────────────────────────────────────
@@ -143,7 +149,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
         detail=False,
         methods=["delete"],
         permission_classes=[IsAuthenticated],
-        url_path="me"
+        url_path="me",
     )
     def delete_account(self, request):
         try:
@@ -171,7 +177,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
         methods=["get"],
         permission_classes=[IsAuthenticated],
         url_path="me/profile",
-        url_name="me-profile"
+        url_name="me-profile",
     )
     def retrieve_profile(self, request):
         try:
@@ -202,9 +208,11 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        rutes = UsuariRuta.objects.filter(usuari=usuari).select_related('route')
+        rutes = UsuariRuta.objects.filter(usuari=usuari).select_related("route")
         serializer = UsuariRutaSerializer(rutes, many=True)
         return Response(serializer.data)
 
@@ -214,7 +222,11 @@ class UsuariViewSet(viewsets.ModelViewSet):
         description="Asocia una ruta existente al usuario autenticado. Devuelve 409 si ya estaba guardada.",
         request=inline_serializer(
             name="SaveRouteRequest",
-            fields={"route_id": serializers.IntegerField(help_text="ID de la ruta a guardar")},
+            fields={
+                "route_id": serializers.IntegerField(
+                    help_text="ID de la ruta a guardar"
+                )
+            },
         ),
         responses={
             201: OpenApiResponse(description="Ruta guardada correctamente"),
@@ -234,19 +246,25 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         serializer = UsuariRutaSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        route = serializer.validated_data['route']
+        route = serializer.validated_data["route"]
 
         if UsuariRuta.objects.filter(usuari=usuari, route=route).exists():
-            return Response({"error": "La ruta ya está guardada"}, status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"error": "La ruta ya está guardada"}, status=status.HTTP_409_CONFLICT
+            )
 
         UsuariRuta.objects.create(usuari=usuari, route=route)
-        return Response({"message": "Ruta guardada correctamente"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Ruta guardada correctamente"}, status=status.HTTP_201_CREATED
+        )
 
     @extend_schema(
         tags=["Usuaris · Me · Rutas"],
@@ -276,12 +294,17 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        deleted, _ = UsuariRuta.objects.filter(usuari=usuari, route_id=route_id).delete()
+        deleted, _ = UsuariRuta.objects.filter(
+            usuari=usuari, route_id=route_id
+        ).delete()
         if not deleted:
             return Response(
-                {"error": "Ruta no encontrada en guardados"}, status=status.HTTP_404_NOT_FOUND
+                {"error": "Ruta no encontrada en guardados"},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -304,10 +327,19 @@ class UsuariViewSet(viewsets.ModelViewSet):
         new_username = request.data.get("username")
         if new_username is not None:
             if not str(new_username).strip():
-                return Response({"username": ["El nombre de usuario no puede estar vacío."]},
-                                status=status.HTTP_400_BAD_REQUEST)
-            if Usuari.objects.filter(username__iexact=new_username).exclude(pk=usuari.pk).exists():
-                return Response({"username": ["Este nombre de usuario ya existe."]}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"username": ["El nombre de usuario no puede estar vacío."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if (
+                Usuari.objects.filter(username__iexact=new_username)
+                .exclude(pk=usuari.pk)
+                .exists()
+            ):
+                return Response(
+                    {"username": ["Este nombre de usuario ya existe."]},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
         serializer = self.get_serializer(usuari, data=request.data, partial=True)
         if serializer.is_valid():
@@ -324,15 +356,19 @@ class UsuariViewSet(viewsets.ModelViewSet):
         responses={200: AmistatSerializer(many=True)},
     )
     @action(
-        detail=False, methods=["get"],
+        detail=False,
+        methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path="me/friends", url_name="me-friends",
+        url_path="me/friends",
+        url_name="me-friends",
     )
     def list_friends(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         amistats = Amistat.objects.filter(
             django_models.Q(solicitant=usuari) | django_models.Q(receptor=usuari),
@@ -354,43 +390,61 @@ class UsuariViewSet(viewsets.ModelViewSet):
         responses={
             201: OpenApiResponse(description="Solicitud enviada"),
             400: OpenApiResponse(description="Error de validación"),
-            409: OpenApiResponse(description="Ya existe una solicitud entre estos usuarios"),
+            409: OpenApiResponse(
+                description="Ya existe una solicitud entre estos usuarios"
+            ),
         },
     )
     @action(
-        detail=False, methods=["post"],
+        detail=False,
+        methods=["post"],
         permission_classes=[IsAuthenticated],
-        url_path="me/friends/request", url_name="me-friends-request",
+        url_path="me/friends/request",
+        url_name="me-friends-request",
     )
     def send_friend_request(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         receptor_id = request.data.get("receptor_id")
         if not receptor_id:
-            return Response({"error": "receptor_id és obligatori"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "receptor_id és obligatori"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if receptor_id == usuari.pk:
-            return Response({"error": "No pots afegir-te a tu mateix"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "No pots afegir-te a tu mateix"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             receptor = Usuari.objects.get(pk=receptor_id)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuari receptor no trobat"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuari receptor no trobat"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # Comprueba duplicado en ambas direcciones
         ja_existeix = Amistat.objects.filter(
-            django_models.Q(solicitant=usuari, receptor=receptor) |
-            django_models.Q(solicitant=receptor, receptor=usuari)
+            django_models.Q(solicitant=usuari, receptor=receptor)
+            | django_models.Q(solicitant=receptor, receptor=usuari)
         ).exists()
         if ja_existeix:
-            return Response({"error": "Ja existeix una sol·licitud entre aquests usuaris"},
-                            status=status.HTTP_409_CONFLICT)
+            return Response(
+                {"error": "Ja existeix una sol·licitud entre aquests usuaris"},
+                status=status.HTTP_409_CONFLICT,
+            )
 
         Amistat.objects.create(solicitant=usuari, receptor=receptor)
-        return Response({"message": "Sol·licitud enviada"}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Sol·licitud enviada"}, status=status.HTTP_201_CREATED
+        )
 
     @extend_schema(
         tags=["Usuaris · Me · Amics"],
@@ -398,12 +452,15 @@ class UsuariViewSet(viewsets.ModelViewSet):
         description="Acepta o rechaza una solicitud. `accio` puede ser `accept` o `reject`.",
         responses={
             200: OpenApiResponse(description="Solicitud actualizada"),
-            403: OpenApiResponse(description="No ets el receptor d'aquesta sol·licitud"),
+            403: OpenApiResponse(
+                description="No ets el receptor d'aquesta sol·licitud"
+            ),
             404: OpenApiResponse(description="Sol·licitud no trobada"),
         },
     )
     @action(
-        detail=False, methods=["patch"],
+        detail=False,
+        methods=["patch"],
         permission_classes=[IsAuthenticated],
         url_path="me/friends/(?P<amistat_id>[^/.]+)/respond",
         url_name="me-friends-respond",
@@ -412,15 +469,22 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         try:
             amistat = Amistat.objects.get(pk=amistat_id)
         except Amistat.DoesNotExist:
-            return Response({"error": "Sol·licitud no trobada"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Sol·licitud no trobada"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if amistat.receptor != usuari:
-            return Response({"error": "No ets el receptor d'aquesta sol·licitud"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "No ets el receptor d'aquesta sol·licitud"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         accio = request.data.get("accio")
         if accio == "accept":
@@ -429,9 +493,14 @@ class UsuariViewSet(viewsets.ModelViewSet):
             return Response({"message": "Amistat acceptada"})
         elif accio == "reject":
             amistat.delete()
-            return Response({"message": "Sol·licitud rebutjada"}, status=status.HTTP_200_OK)
+            return Response(
+                {"message": "Sol·licitud rebutjada"}, status=status.HTTP_200_OK
+            )
 
-        return Response({"error": "accio ha de ser 'accept' o 'reject'"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"error": "accio ha de ser 'accept' o 'reject'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     @extend_schema(
         tags=["Usuaris · Me · Amics"],
@@ -440,15 +509,19 @@ class UsuariViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(description="Lista de solicitudes")},
     )
     @action(
-        detail=False, methods=["get"],
+        detail=False,
+        methods=["get"],
         permission_classes=[IsAuthenticated],
-        url_path="me/friends/requests", url_name="me-friends-requests",
+        url_path="me/friends/requests",
+        url_name="me-friends-requests",
     )
     def list_friend_requests(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         solicituds = Amistat.objects.filter(
             receptor=usuari,
@@ -475,7 +548,8 @@ class UsuariViewSet(viewsets.ModelViewSet):
         },
     )
     @action(
-        detail=False, methods=["delete"],
+        detail=False,
+        methods=["delete"],
         permission_classes=[IsAuthenticated],
         url_path="me/friends/(?P<amic_id>[0-9]+)",
         url_name="me-friends-delete",
@@ -484,17 +558,22 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         from django.db import models as django_models
+
         deleted, _ = Amistat.objects.filter(
-            django_models.Q(solicitant=usuari, receptor_id=amic_id) |
-            django_models.Q(solicitant_id=amic_id, receptor=usuari),
+            django_models.Q(solicitant=usuari, receptor_id=amic_id)
+            | django_models.Q(solicitant_id=amic_id, receptor=usuari),
             estat=EstatAmistat.ACCEPTED,
         ).delete()
 
         if not deleted:
-            return Response({"error": "Amistat no trobada"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Amistat no trobada"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -509,7 +588,8 @@ class UsuariViewSet(viewsets.ModelViewSet):
         responses={200: OpenApiResponse(description="Token registrado")},
     )
     @action(
-        detail=False, methods=["patch"],
+        detail=False,
+        methods=["patch"],
         permission_classes=[IsAuthenticated],
         url_path="me/fcm-token",
         url_name="me-fcm-token",
@@ -518,11 +598,15 @@ class UsuariViewSet(viewsets.ModelViewSet):
         try:
             usuari = self._get_usuari_from_token(request)
         except Usuari.DoesNotExist:
-            return Response({"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         fcm_token = request.data.get("fcm_token", "").strip()
         if not fcm_token:
-            return Response({"error": "fcm_token és obligatori"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "fcm_token és obligatori"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         usuari.fcm_token = fcm_token
         usuari.save(update_fields=["fcm_token"])

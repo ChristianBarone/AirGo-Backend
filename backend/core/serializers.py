@@ -1,7 +1,24 @@
 from rest_framework import serializers
-from .models import Route, Usuari, Titol, UsuariTitol, PlaEntrenament, TemplateExercici, Exercici, UsuariRuta, Amistat, \
-    Conversa, Missatge, Insignia, UsuariInsignia, PuntLog
+from .models import (
+    Route,
+    Usuari,
+    Titol,
+    UsuariTitol,
+    PlaEntrenament,
+    TemplateExercici,
+    Exercici,
+    UsuariRuta,
+    Amistat,
+    Conversa,
+    Missatge,
+    Forum,
+    ForumFavorit,
+    Insignia,
+    UsuariInsignia,
+    PuntLog,
+)
 import os
+
 
 class UsuariSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()
@@ -15,7 +32,9 @@ class UsuariSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         value = value.strip()
         if not value:
-            raise serializers.ValidationError("El nombre de usuario no puede estar vacío")
+            raise serializers.ValidationError(
+                "El nombre de usuario no puede estar vacío"
+            )
         if len(value) <= 3:
             raise serializers.ValidationError("El username es demasiado corto")
         return value
@@ -39,6 +58,7 @@ class UsuariSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuari
         fields = "__all__"
+
 
 class AmistatSerializer(serializers.ModelSerializer):
     # Devuelve info básica del amigo, no del registro de amistad
@@ -84,37 +104,43 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
         model = UsuariTitol
         fields = ["titol"]
 
+
 class ExerciciPolymorphicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercici
-        fields = ['id', 'dataInici', 'completat', 'distanciaObjectiu', 'distanciaFeta']
+        fields = ["id", "dataInici", "completat", "distanciaObjectiu", "distanciaFeta"]
 
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
     exercicis = ExerciciPolymorphicSerializer(
-        many=True, read_only=True, source='instancies_exercici'
+        many=True, read_only=True, source="instancies_exercici"
     )
 
     class Meta:
         model = TemplateExercici
-        fields = ['id', 'nom', 'descripcio', 'tipusExercici', 'exercicis']
+        fields = ["id", "nom", "descripcio", "tipusExercici", "exercicis"]
 
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
     templates = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=TemplateExercici.objects.all()
+        many=True, queryset=TemplateExercici.objects.all()
     )
 
     class Meta:
         model = PlaEntrenament
-        fields = ['id', 'diesDurada', 'numEntrenamentsSetmanals', 'templates']
+        fields = ["id", "diesDurada", "numEntrenamentsSetmanals", "templates"]
 
 
 class ExerciciSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercici
-        fields = ['id', 'distance_meters', 'duration_seconds', 'avg_speed_kmh', 'route_points']
+        fields = [
+            "id",
+            "distance_meters",
+            "duration_seconds",
+            "avg_speed_kmh",
+            "route_points",
+        ]
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
@@ -133,11 +159,18 @@ class MissatgeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Missatge
-        fields = ["id", "emissor", "emissor_username", "contingut", "enviat_at", "llegit"]
+        fields = [
+            "id",
+            "emissor",
+            "emissor_username",
+            "contingut",
+            "enviat_at",
+            "llegit",
+        ]
 
 
 class ConversaSerializer(serializers.ModelSerializer):
-    other_user  = serializers.SerializerMethodField()
+    other_user = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
 
@@ -147,19 +180,48 @@ class ConversaSerializer(serializers.ModelSerializer):
 
     def get_other_user(self, obj):
         u = self._other(obj)
-        return {"id": u.pk, "username": u.username,
-                "profile_pic": u.profile_pic.url if u.profile_pic else None}
+        return {
+            "id": u.pk,
+            "username": u.username,
+            "profile_pic": u.profile_pic.url if u.profile_pic else None,
+        }
 
     def get_last_message(self, obj):
         last = obj.missatges.last()
-        return {"contingut": last.contingut, "enviat_at": last.enviat_at} if last else None
+        return (
+            {"contingut": last.contingut, "enviat_at": last.enviat_at} if last else None
+        )
 
     def get_unread_count(self, obj):
         uid = self.context["request_user_id"]
         return obj.missatges.filter(llegit=False).exclude(emissor_id=uid).count()
 
+    chat_id = serializers.SerializerMethodField()
+
+    def get_chat_id(self, obj):
+        return f"{obj.usuari_1.pk}-{obj.usuari_2.pk}"
+
     class Meta:
         model = Conversa
+        fields = ["chat_id", "other_user", "last_message", "unread_count", "creada_at"]
+
+
+class ForumSerializer(serializers.ModelSerializer):
+    creat_per = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Forum
+        fields = ["id", "nom", "descripcio", "creat_per", "creat_at"]
+        read_only_fields = ["id", "creat_per", "creat_at"]
+
+
+class ForumFavoritSerializer(serializers.ModelSerializer):
+    forum = ForumSerializer(read_only=True)
+
+    class Meta:
+        model = ForumFavorit
+        fields = ["id", "forum", "afegit_at"]
+
         fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
 
 

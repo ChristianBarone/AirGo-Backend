@@ -35,16 +35,24 @@ class GoogleLoginView(APIView):
             200: inline_serializer(
                 name="GoogleLoginResponse",
                 fields={
-                    "user": serializers.EmailField(help_text="Email del usuario autenticado"),
-                    "usuari_id": serializers.IntegerField(help_text="ID interno del Usuari"),
+                    "user": serializers.EmailField(
+                        help_text="Email del usuario autenticado"
+                    ),
+                    "usuari_id": serializers.IntegerField(
+                        help_text="ID interno del Usuari"
+                    ),
                     "picture": serializers.URLField(
                         allow_null=True, help_text="URL de la foto de perfil de Google"
                     ),
-                    "access": serializers.CharField(help_text="JWT access token (expira en 5 min por defecto)"),
+                    "access": serializers.CharField(
+                        help_text="JWT access token (expira en 5 min por defecto)"
+                    ),
                     "refresh": serializers.CharField(help_text="JWT refresh token"),
                 },
             ),
-            400: OpenApiResponse(description="Token de Google inválido o email no verificado"),
+            400: OpenApiResponse(
+                description="Token de Google inválido o email no verificado"
+            ),
         },
     )
     def post(self, request):
@@ -57,15 +65,12 @@ class GoogleLoginView(APIView):
 
         try:
             idinfo = id_token.verify_oauth2_token(
-                token,
-                requests.Request(),
-                GOOGLE_CLIENT_ID
+                token, requests.Request(), GOOGLE_CLIENT_ID
             )
 
             if not idinfo.get("email_verified", False):
                 return Response(
-                    {"error": "Email not verified"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    {"error": "Email not verified"}, status=status.HTTP_400_BAD_REQUEST
                 )
 
             email = idinfo["email"]
@@ -74,8 +79,7 @@ class GoogleLoginView(APIView):
             google_id = idinfo["sub"]
 
             user, created = User.objects.get_or_create(
-                username=email,
-                defaults={"email": email, "first_name": name}
+                username=email, defaults={"email": email, "first_name": name}
             )
 
             usuari, _ = Usuari.objects.get_or_create(
@@ -89,22 +93,24 @@ class GoogleLoginView(APIView):
                     "ratxa": 0,
                     "limitRutes": 0,
                     "titol": "",
-                }
+                },
             )
 
             refresh = RefreshToken.for_user(user)
-            refresh['google_id'] = usuari.google_id
+            refresh["google_id"] = usuari.google_id
 
-            return Response({
-                "user": email,
-                "usuari_id": usuari.id,
-                "picture": picture,
-                "access": str(refresh.access_token),
-                "refresh": str(refresh)
-            })
+            return Response(
+                {
+                    "user": email,
+                    "usuari_id": usuari.id,
+                    "picture": picture,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                }
+            )
 
         except ValueError as e:
             return Response(
                 {"error": "Invalid Google token", "detail": str(e)},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )

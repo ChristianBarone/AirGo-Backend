@@ -3,7 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated
 
-from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, inline_serializer
+from drf_spectacular.utils import (
+    extend_schema,
+    OpenApiParameter,
+    OpenApiResponse,
+    inline_serializer,
+)
 from drf_spectacular.types import OpenApiTypes
 
 from ..services.bicing import get_bicing_near
@@ -49,14 +54,24 @@ class BicingView(APIView):
                 name="BicingEstacioResponse",
                 many=True,
                 fields={
-                    "station_id": serializers.IntegerField(help_text="ID de la estación Bicing"),
+                    "station_id": serializers.IntegerField(
+                        help_text="ID de la estación Bicing"
+                    ),
                     "name": serializers.CharField(help_text="Nombre de la estación"),
                     "lat": serializers.FloatField(),
                     "lon": serializers.FloatField(),
-                    "capacity": serializers.IntegerField(help_text="Capacidad total de la estación"),
-                    "bikes_available": serializers.IntegerField(help_text="Bicicletas disponibles ahora"),
-                    "docks_available": serializers.IntegerField(help_text="Anclajes libres ahora"),
-                    "updated_at": serializers.DateTimeField(help_text="Última actualización del dato"),
+                    "capacity": serializers.IntegerField(
+                        help_text="Capacidad total de la estación"
+                    ),
+                    "bikes_available": serializers.IntegerField(
+                        help_text="Bicicletas disponibles ahora"
+                    ),
+                    "docks_available": serializers.IntegerField(
+                        help_text="Anclajes libres ahora"
+                    ),
+                    "updated_at": serializers.DateTimeField(
+                        help_text="Última actualización del dato"
+                    ),
                 },
             ),
             400: OpenApiResponse(description="lat, lon o radio no son números válidos"),

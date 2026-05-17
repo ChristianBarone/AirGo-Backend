@@ -119,13 +119,12 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
-
     # Botón "Authorize" con JWT Bearer en Swagger UI
     "SECURITY": [{"BearerAuth": []}],
     "SWAGGER_UI_SETTINGS": {
-        "persistAuthorization": True,   # mantiene el token al recargar la página
-        "displayRequestDuration": True, # muestra cuánto tarda cada request
-        "filter": True,                 # barra de búsqueda por tag/endpoint
+        "persistAuthorization": True,  # mantiene el token al recargar la página
+        "displayRequestDuration": True,  # muestra cuánto tarda cada request
+        "filter": True,  # barra de búsqueda por tag/endpoint
     },
     "APPEND_COMPONENTS": {
         "securitySchemes": {
@@ -153,6 +152,7 @@ USE_TZ = True
 # ── Archivos estáticos y media ────────────────────────────────────────────────
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 MEDIA_URL = "/media/"
@@ -163,13 +163,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [o for o in csrf_origins.split(",") if o]
 
-#--Refresh---------------
+# --Refresh---------------
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
-    "ROTATE_REFRESH_TOKENS": True,       # ← cada refresh emite nuevo refresh token
-    "BLACKLIST_AFTER_ROTATION": True,    # ← invalida el anterior
+    "ROTATE_REFRESH_TOKENS": True,  # ← cada refresh emite nuevo refresh token
+    "BLACKLIST_AFTER_ROTATION": True,  # ← invalida el anterior
 }
 
 # ── Channels / WebSocket ──────────────────────────────────────────────────────

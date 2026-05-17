@@ -14,7 +14,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def _get_usuari_from_token(self, request):
-        google_id = request.auth.get('google_id')
+        google_id = request.auth.get("google_id")
         return Usuari.objects.get(google_id=google_id)
 
     def get_queryset(self):

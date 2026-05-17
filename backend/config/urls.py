@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
@@ -15,35 +16,56 @@ from core.views.views_usuari import UsuariViewSet
 from core.views.route_pollution_view import EcoRouteView
 from core.views.views_air_quality import AirQualityView, ExternalAirQualityView
 from core.views.views_bicing import BicingView
-from core.views.views_pla_entrenament import PlaEntrenamentViewSet  # Importar PlaEntrenamentViewSet
+from core.views.views_pla_entrenament import (
+    PlaEntrenamentViewSet,
+)  # Importar PlaEntrenamentViewSet
 from rest_framework_simplejwt.views import TokenRefreshView
 from core.views.views_exercici import ExerciciViewSet
 from core.views.views_exercici import TemplateExerciciViewSet
 from core.views.views_chat import ConversaViewSet
+from core.views.views_forum import ForumViewSet, UsuariForumsFavoritsView
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
 router.register(r"usuaris", UsuariViewSet)
-router.register(r"pla-entrenament", PlaEntrenamentViewSet)  # Registrar la vista de PlaEntrenament
-router.register(r'exercicis', ExerciciViewSet, basename='exercici')
-router.register(r'template-exercici', TemplateExerciciViewSet)
+router.register(
+    r"pla-entrenament", PlaEntrenamentViewSet
+)  # Registrar la vista de PlaEntrenament
+router.register(r"exercicis", ExerciciViewSet, basename="exercici")
+router.register(r"template-exercici", TemplateExerciciViewSet)
 router.register(r"conversations", ConversaViewSet, basename="conversa")
+router.register(r"forums", ForumViewSet, basename="forum")
 
 usuari_save_route = UsuariViewSet.as_view({"post": "save_route"})
 usuari_get_routes = UsuariViewSet.as_view({"get": "get_saved_routes"})
 usuari_delete_route = UsuariViewSet.as_view({"delete": "delete_saved_route"})
 
 urlpatterns = [
+    path("admin/", admin.site.urls),
     path("", home, name="home"),
     path("health/", health, name="health"),
     path("auth/google/", GoogleLoginView.as_view(), name="auth-google"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token-refresh"),
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
-    path('zone-air-quality/', ExternalAirQualityView.as_view(), name='external-air-quality'),
+    path(
+        "zone-air-quality/",
+        ExternalAirQualityView.as_view(),
+        name="external-air-quality",
+    ),
     path("bicing/", BicingView.as_view(), name="bicing"),
     path("api/usuaris/me/routes/save/", usuari_save_route, name="usuari-save-route"),
     path("api/usuaris/me/routes/", usuari_get_routes, name="usuari-get-routes"),
+    path(
+        "api/usuaris/me/forums/",
+        UsuariForumsFavoritsView.as_view(),
+        name="usuari-forums-favorits",
+    ),
+    path(
+        "api/usuaris/me/forums/<int:forum_id>/",
+        UsuariForumsFavoritsView.as_view(),
+        name="usuari-forum-favorit-delete",
+    ),
     path(
         "api/usuaris/me/routes/<int:route_id>/",
         usuari_delete_route,
