@@ -1,8 +1,11 @@
+from datetime import datetime # <--- IMPORTANTE añadir este
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import serializers
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
+
+from core.models import AirQualityHistoric
+from ..services.air_quality import get_air_quality_near, haversine_km
 
 from drf_spectacular.utils import (
     extend_schema,
@@ -11,9 +14,6 @@ from drf_spectacular.utils import (
     inline_serializer,
 )
 from drf_spectacular.types import OpenApiTypes
-
-from ..services.air_quality import get_air_quality_near, haversine_km
-
 
 class AirQualityView(APIView):
     permission_classes = [AllowAny]
@@ -27,53 +27,22 @@ class AirQualityView(APIView):
             "de las coordenadas dadas. No requiere autenticación."
         ),
         parameters=[
-            OpenApiParameter(
-                name="lat",
-                type=OpenApiTypes.FLOAT,
-                location=OpenApiParameter.QUERY,
-                required=True,
-                description="Latitud del punto de referencia (ej: 41.385)",
-            ),
-            OpenApiParameter(
-                name="lon",
-                type=OpenApiTypes.FLOAT,
-                location=OpenApiParameter.QUERY,
-                required=True,
-                description="Longitud del punto de referencia (ej: 2.173)",
-            ),
-            OpenApiParameter(
-                name="radio",
-                type=OpenApiTypes.FLOAT,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description="Radio de búsqueda en kilómetros (por defecto: 5)",
-            ),
+            OpenApiParameter(name="lat", type=OpenApiTypes.FLOAT, location=OpenApiParameter.QUERY, required=True),
+            OpenApiParameter(name="lon", type=OpenApiTypes.FLOAT, location=OpenApiParameter.QUERY, required=True),
+            OpenApiParameter(name="radio", type=OpenApiTypes.FLOAT, location=OpenApiParameter.QUERY, required=False),
         ],
         responses={
             200: inline_serializer(
                 name="AirQualityStation",
                 many=True,
                 fields={
-                    "zone": serializers.CharField(
-                        help_text="Nombre de la zona / estación"
-                    ),
-                    "aqi": serializers.FloatField(
-                        help_text="Índice de calidad del aire (AQI)"
-                    ),
+                    "zone": serializers.CharField(),
+                    "aqi": serializers.FloatField(),
                     "geoPoint": inline_serializer(
                         name="GeoPoint",
-                        fields={
-                            "lat": serializers.FloatField(),
-                            "lon": serializers.FloatField(),
-                        },
+                        fields={"lat": serializers.FloatField(), "lon": serializers.FloatField()},
                     ),
                 },
-            ),
-            400: OpenApiResponse(
-                description="Parámetros lat, lon o radio no numéricos"
-            ),
-            500: OpenApiResponse(
-                description="Error interno al consultar la fuente de datos"
             ),
         },
     )
@@ -88,48 +57,84 @@ class AirQualityView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # 1. INTENTAR API EN VIVO (PLAN A)
         try:
             pollution_points = get_air_quality_near(lat, lon, radio)
-            return Response(pollution_points, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(
-                {"error": f"Error obteniendo calidad del aire: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        except Exception:
+            pollution_points = []
+
+        # 2. SI LA API FALLÓ O NO HAY DATOS, USAR BD (PLAN B)
+        if not pollution_points:
+            now = datetime.now()
+            historics = AirQualityHistoric.objects.filter(
+                day_of_week=now.weekday(),
+                hora=now.hour
             )
 
+            for h in historics:
+                dist = haversine_km(lat, lon, h.lat, h.lon)
+                if dist <= radio:
+                    pollution_points.append({
+                        "zone": f"Estación Histórica (Aprox)",
+                        "aqi": h.aqi,
+                        "geoPoint": {"lat": h.lat, "lon": h.lon}
+                    })
+
+        if not pollution_points:
+            return Response(
+                {"error": "No hay datos disponibles."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(pollution_points, status=status.HTTP_200_OK)
 
 class ExternalAirQualityView(APIView):
-
     def get(self, request):
-        lat = request.query_params.get("lat")
-        lon = request.query_params.get("lon")
-        radius = request.query_params.get("radius")  # Radi per defecte 5km
+        lat_param = request.query_params.get("lat")
+        lon_param = request.query_params.get("lon")
+        radius_param = request.query_params.get("radius")
 
-        if not lat or not lon:
-            return Response(
-                {"error": "Falten els paràmetres 'lat' i 'lon'."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        if not lat_param or not lon_param:
+            return Response({"error": "Falten els paràmetres 'lat' i 'lon'."}, status=400)
 
         try:
-            lat, lon = float(lat), float(lon)
+            lat = float(lat_param)
+            lon = float(lon_param)
+            search_radius = float(radius_param) if radius_param else 10.0
         except ValueError:
             return Response({"error": "Formats numèrics incorrectes."}, status=400)
 
-        # Obtenim totes les estacions properes
-        search_radius = float(radius) if radius else 10.0
-        stations = get_air_quality_near(lat, lon, radio_km=search_radius)
+        # 1. PLAN A: API EXTERNA
+        try:
+            stations = get_air_quality_near(lat, lon, radio_km=search_radius)
+        except Exception:
+            stations = []
+
+        # 2. PLAN B: BD
+        source = "live"
+        if not stations:
+            source = "historic"
+            now = datetime.now()
+            historics = AirQualityHistoric.objects.filter(
+                day_of_week=now.weekday(),
+                hora=now.hour
+            )
+            for h in historics:
+                dist = haversine_km(lat, lon, h.lat, h.lon)
+                if dist <= search_radius:
+                    stations.append({
+                        "zone": "Dato Histórico Guardado",
+                        "geoPoint": {"lat": h.lat, "lon": h.lon},
+                        "aqi": h.aqi,
+                        "distance": dist
+                    })
 
         if not stations:
-            return Response(
-                {"message": "No hi ha dades disponibles per aquesta zona."}, status=404
-            )
+            return Response({"message": "No hi ha dades disponibles."}, status=404)
 
-        # Calculem quina estació és la més propera de les que hem trobat
         for s in stations:
-            s["distance"] = haversine_km(
-                lat, lon, s["geoPoint"]["lat"], s["geoPoint"]["lon"]
-            )
+            if "distance" not in s:
+                s["distance"] = haversine_km(lat, lon, s["geoPoint"]["lat"], s["geoPoint"]["lon"])
 
         nearest_station = min(stations, key=lambda x: x["distance"])
 
@@ -138,12 +143,11 @@ class ExternalAirQualityView(APIView):
                 "aqi": nearest_station["aqi"],
                 "station": nearest_station["zone"],
                 "distance_km": round(nearest_station["distance"], 2),
+                "source": source
             }
         }
 
-        # 4. NOMÉS si han passat el paràmetre 'radius', afegim les recomanacions
-        if radius is not None:
-            # Ordenem per millor AQI i agafem les 3 millors zones
+        if radius_param is not None:
             best_areas = sorted(stations, key=lambda x: x["aqi"])[:3]
             response_data["recommendations"] = [
                 {
@@ -152,8 +156,7 @@ class ExternalAirQualityView(APIView):
                     "lon": area["geoPoint"]["lon"],
                     "aqi": area["aqi"],
                 }
-                for area in best_areas
-                if area["aqi"] < 100
+                for area in best_areas if area["aqi"] < 100
             ]
 
         return Response(response_data, status=status.HTTP_200_OK)

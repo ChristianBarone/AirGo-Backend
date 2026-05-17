@@ -140,6 +140,10 @@ SPECTACULAR_SETTINGS = {
             }
         }
     },
+    "POSTPROCESSING_HOOKS": [
+        "drf_spectacular.hooks.postprocess_schema_enums",
+        "config.schema_extensions.add_websocket_paths",
+    ],
 }
 
 # ── Internacionalización ──────────────────────────────────────────────────────
