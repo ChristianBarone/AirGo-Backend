@@ -1,4 +1,3 @@
-import os
 from django.db.models import Sum
 from datetime import date
 from ..models import UsuariInsignia, Insignia, PuntLog, Exercici

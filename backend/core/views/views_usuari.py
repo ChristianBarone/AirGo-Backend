@@ -13,7 +13,7 @@ from drf_spectacular.utils import (
 )
 from drf_spectacular.types import OpenApiTypes
 
-from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat, Insignia
+from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat
 from ..serializers import (
     UsuariSerializer,
     UsuariTitolSerializer,
