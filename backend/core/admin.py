@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+
 from .models import (
     Route,
     Usuari,
@@ -15,6 +17,9 @@ from .models import (
     ForumFavorit,
     BicingEstacio,
     AirQualityHistoric,
+    Insignia,
+    UsuariInsignia,
+    PuntLog,
 )
 
 # ── Usuarios y Perfiles ───────────────────────────────────────────────────────
@@ -118,7 +123,7 @@ class ForumFavoritAdmin(admin.ModelAdmin):
     list_display = ("usuari", "forum", "afegit_at")
 
 
-# ── Títulos y Logros ──────────────────────────────────────────────────────────
+# ── Gamificación ──────────────────────────────────────────────────────────
 
 
 @admin.register(Titol)
@@ -129,3 +134,34 @@ class TitolAdmin(admin.ModelAdmin):
 @admin.register(UsuariTitol)
 class UsuariTitolAdmin(admin.ModelAdmin):
     list_display = ("usuari", "titol")
+
+
+@admin.register(Insignia)
+class InsigniaAdmin(admin.ModelAdmin):
+    list_display = ("nom", "tipus", "valor_requerit", "mostrar_icona")
+    list_filter = ("tipus",)
+    search_fields = ("nom",)
+
+    def mostrar_icona(self, obj):
+        if obj.icona:
+            url_imatge = obj.icona.url
+            return format_html(
+                '<img src="{}" style="width: 40px; height: 40px; object-fit: contain;" />',
+                url_imatge,
+            )
+        return "Sense icona"
+
+    mostrar_icona.short_description = "Previsualització Icona"
+
+
+@admin.register(UsuariInsignia)
+class UsuariInsigniaAdmin(admin.ModelAdmin):
+    list_display = ("usuari", "insignia")  # Si has afegit data_guanyada, posa-ho aquí
+    list_filter = ("insignia",)
+
+
+@admin.register(PuntLog)
+class PuntLogAdmin(admin.ModelAdmin):
+    list_display = ("usuari", "quantitat", "motiu", "data")
+    list_filter = ("data",)
+    search_fields = ("usuari__username", "motiu")
