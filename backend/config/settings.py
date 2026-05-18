@@ -84,7 +84,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "airgo"),
         "USER": os.getenv("POSTGRES_USER", "airgo_user"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "airgo_pass"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
         "HOST": os.getenv("POSTGRES_HOST", "db"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
