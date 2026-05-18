@@ -19,6 +19,7 @@ from .models import (
 )
 import os
 
+
 class UsuariSerializer(serializers.ModelSerializer):
     profile_pic = serializers.SerializerMethodField()
 
