@@ -130,22 +130,28 @@ class ExerciciSerializer(serializers.ModelSerializer):
             "duration_seconds",
             "avg_speed_kmh",
             "route_points",
-            "created_at"
+            "created_at",
         ]
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         # Si el ejercicio tiene una plantilla asignada, la serializamos con el detalle completo
         if instance.template:
-            representation['template'] = TemplateExerciciSimpleSerializer(instance.template).data
+            representation["template"] = TemplateExerciciSimpleSerializer(
+                instance.template
+            ).data
         return representation
 
+
 class TemplateExerciciSerializer(serializers.ModelSerializer):
-    exercicis = ExerciciSerializer(many=True, read_only=True, source="instancies_exercici")
+    exercicis = ExerciciSerializer(
+        many=True, read_only=True, source="instancies_exercici"
+    )
 
     class Meta:
         model = TemplateExercici
         fields = ["id", "nom", "descripcio", "tipusExercici", "exercicis"]
+
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
     templates = serializers.PrimaryKeyRelatedField(
