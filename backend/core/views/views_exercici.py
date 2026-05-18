@@ -22,11 +22,23 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         usuari = self._get_usuari_from_token(self.request)
         return Exercici.objects.filter(usuari=usuari)
 
-    def perform_create(self, serializer):
-        # Al guardar, le pegamos el usuario que viene del token
-        usuari = self._get_usuari_from_token(self.request)
-        serializer.save(usuari=usuari)
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        usuari = self._get_usuari_from_token(request)
+        instance = serializer.save(usuari=usuari)
 
+        response_data = serializer.data
+
+        if request.data.get("completat") is True:
+
+            noves_insignies = gestionar_puntuacio_i_insignies(usuari, exercici=instance)
+
+            response_data["new_badges"] = noves_insignies
+            response_data["points_earned_total"] = usuari.punts
+            response_data["current_streak"] = usuari.ratxa
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         ja_completat = instance.completat
