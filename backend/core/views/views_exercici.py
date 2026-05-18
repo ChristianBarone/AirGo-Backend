@@ -39,6 +39,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
             response_data["current_streak"] = usuari.ratxa
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         ja_completat = instance.completat
