@@ -130,7 +130,9 @@ class ExerciciSerializer(serializers.ModelSerializer):
             "duration_seconds",
             "avg_speed_kmh",
             "route_points",
-            "created_at"
+            "created_at",
+            "sensacio",
+            "comentari"
         ]
 
     def to_representation(self, instance):
