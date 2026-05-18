@@ -16,6 +16,7 @@ from .models import (
     Insignia,
     UsuariInsignia,
     PuntLog,
+    ObjectiuExercici,
 )
 import os
 
@@ -105,23 +106,25 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
         fields = ["titol"]
 
 
-from rest_framework import serializers
-from .models import Exercici, TemplateExercici
-
-
 class TemplateExerciciSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TemplateExercici
         fields = ["id", "nom", "descripcio", "tipusExercici"]
 
 
-class ExerciciSerializer(serializers.ModelSerializer):
+class ObjectiuSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ObjectiuExercici
+        fields = ["id", "categoria", "descripcio", "recompensa"]
 
+
+class ExerciciSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercici
         fields = [
             "id",
             "template",
+            "objectius",
             "dataInici",
             "completat",
             "distanciaObjectiu",
@@ -138,7 +141,10 @@ class ExerciciSerializer(serializers.ModelSerializer):
         # Si el ejercicio tiene una plantilla asignada, la serializamos con el detalle completo
         if instance.template:
             representation['template'] = TemplateExerciciSimpleSerializer(instance.template).data
+        # Obtenemos todos los objetivos asociados a este ejercicio
+        representation['objectius'] = ObjectiuSimpleSerializer(instance.objectius.all(), many=True).data
         return representation
+
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
     exercicis = ExerciciSerializer(many=True, read_only=True, source="instancies_exercici")

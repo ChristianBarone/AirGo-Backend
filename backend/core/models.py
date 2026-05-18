@@ -21,6 +21,11 @@ class DifPlaEntrenament(models.TextChoices):
     NORMAL = "NOR", "Normal"
     INTENS = "INT", "Intens"
 
+class CategoriaObjectiu(models.TextChoices):
+    OR = "OR", "Or"
+    PLATA = "PLA", "Plata"
+    BRONZE = "BRO", "Bronze"
+
 
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -192,6 +197,15 @@ class TemplateExercici(models.Model):
     def __str__(self):
         return self.nom
 
+class ObjectiuExercici(models.Model):
+    categoria = models.CharField(
+        max_length=3, choices=CategoriaObjectiu.choices, default=CategoriaObjectiu.BRONZE
+    )
+    descripcio = models.TextField(blank=True)
+    recompensa = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.categoria} - {self.descripcio[:20]}"
 
 class Exercici(models.Model):
     usuari = models.ForeignKey(
@@ -203,6 +217,11 @@ class Exercici(models.Model):
         null=True,
         blank=True,
         related_name="instancies_exercici",
+    )
+    objectius = models.ManyToManyField(
+        ObjectiuExercici,
+        blank=True,
+        related_name="exercicis_asociats",
     )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
