@@ -28,5 +28,5 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
 
 class TemplateExerciciViewSet(viewsets.ModelViewSet):
-    queryset = TemplateExercici.objects.all()
+    queryset = TemplateExercici.objects.all().prefetch_related("instancies_exercici")
     serializer_class = TemplateExerciciSerializer

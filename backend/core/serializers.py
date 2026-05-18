@@ -102,14 +102,26 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
         fields = ["titol"]
 
 
-class ExerciciPolymorphicSerializer(serializers.ModelSerializer):
+class ExerciciSerializer(serializers.ModelSerializer):
+    route_points = serializers.JSONField
+
     class Meta:
         model = Exercici
-        fields = ["id", "dataInici", "completat", "distanciaObjectiu", "distanciaFeta"]
-
+        fields = [
+            "id",
+            "dataInici",
+            "completat",
+            "distanciaObjectiu",
+            "distanciaFeta",
+            "distance_meters",
+            "duration_seconds",
+            "avg_speed_kmh",
+            "route_points",
+            "created_at"
+        ]
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
-    exercicis = ExerciciPolymorphicSerializer(
+    exercicis = ExerciciSerializer(
         many=True, read_only=True, source="instancies_exercici"
     )
 
@@ -126,18 +138,6 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ["id", "diesDurada", "numEntrenamentsSetmanals", "templates"]
-
-
-class ExerciciSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Exercici
-        fields = [
-            "id",
-            "distance_meters",
-            "duration_seconds",
-            "avg_speed_kmh",
-            "route_points",
-        ]
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
