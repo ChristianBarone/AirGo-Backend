@@ -1,5 +1,6 @@
 import os
 from django.db import models
+from datetime import date
 from django.utils import timezone
 
 
@@ -38,9 +39,9 @@ class Usuari(models.Model):
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
     titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
-    insignies = models.ImageField(upload_to="insignies", blank=True, null=True)
     fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
+    ultima_activitat = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.username
@@ -68,6 +69,18 @@ class Usuari(models.Model):
             self.save()
         # no se necesita, solo es confirmación
         return hi_ha_canvis
+
+    def verificar_i_resetejar_ratxa(self):
+        if self.ultima_activitat:
+            avui = date.today()
+            diferencia = (avui - self.ultima_activitat).days
+
+            # Si han passat més de 3 dies sense fer exercici, la ratxa es perd
+            if diferencia > 3:
+                self.ratxa = 0
+                self.save(update_fields=["ratxa"])
+                return True
+        return False
 
 
 class EstatAmistat(models.TextChoices):
@@ -290,3 +303,38 @@ class ForumFavorit(models.Model):
 
     def __str__(self):
         return f"{self.usuari.username} → {self.forum.nom}"
+
+
+class Insignia(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.TextField()
+    icona = models.ImageField(upload_to="insignies", null=True, blank=True)
+
+    tipus = models.CharField(max_length=50)
+    valor_requerit = models.FloatField()
+
+    def __str__(self):
+        return self.nom
+
+
+class UsuariInsignia(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="insignies_guanyades"
+    )
+    insignia = models.ForeignKey(Insignia, on_delete=models.CASCADE)
+    data_guanyada = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ["usuari", "insignia"]
+
+    def __str__(self):
+        return f"{self.usuari.username} - {self.insignia.nom}"
+
+
+class PuntLog(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="logs_punts"
+    )
+    quantitat = models.IntegerField()
+    motiu = models.CharField(max_length=255)
+    data = models.DateTimeField(auto_now_add=True)

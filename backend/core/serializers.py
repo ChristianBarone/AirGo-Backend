@@ -13,6 +13,9 @@ from .models import (
     Missatge,
     Forum,
     ForumFavorit,
+    Insignia,
+    UsuariInsignia,
+    PuntLog,
 )
 import os
 
@@ -218,3 +221,33 @@ class ForumFavoritSerializer(serializers.ModelSerializer):
     class Meta:
         model = ForumFavorit
         fields = ["id", "forum", "afegit_at"]
+
+        fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
+
+
+class InsigniaSerializer(serializers.ModelSerializer):
+    icona = serializers.SerializerMethodField()
+
+    def get_icona(self, obj):
+        if not obj.icona:
+            return None
+        base_url = os.environ.get("BASE_URL", "http://nattech.fib.upc.edu:40330")
+        return f"{base_url}{obj.icona.url}"
+
+    class Meta:
+        model = Insignia
+        fields = ["id", "nom", "descripcio", "icona", "tipus", "valor_requerit"]
+
+
+class UsuariInsigniaSerializer(serializers.ModelSerializer):
+    insignia = InsigniaSerializer(read_only=True)
+
+    class Meta:
+        model = UsuariInsignia
+        fields = ["insignia", "data_guanyada"]
+
+
+class PuntLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PuntLog
+        fields = ["quantitat", "motiu", "data"]

@@ -19,8 +19,12 @@ from ..serializers import (
     UsuariTitolSerializer,
     UsuariRutaSerializer,
     AmistatSerializer,
+    UsuariInsigniaSerializer,
+    PuntLogSerializer,
 )
 from django.db import models as django_models
+
+from ..services.gamificacio import gestionar_puntuacio_i_insignies
 
 
 @extend_schema_view(
@@ -178,6 +182,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
     def retrieve_profile(self, request):
         try:
             usuari = self._get_usuari_from_token(request)
+            usuari.verificar_i_resetejar_ratxa()
         except Usuari.DoesNotExist:
             return Response({"error": "Usuario no encontrado"}, status=404)
 
@@ -607,3 +612,73 @@ class UsuariViewSet(viewsets.ModelViewSet):
         usuari.fcm_token = fcm_token
         usuari.save(update_fields=["fcm_token"])
         return Response({"message": "Token registrat correctament"})
+
+    @extend_schema(tags=["Usuaris · Me"], summary="Llistar les meves insígnies")
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="me/insignies",
+        permission_classes=[IsAuthenticated],
+    )
+    def get_my_insignies(self, request):
+        usuari = self._get_usuari_from_token(request)
+        registres = usuari.insignies_guanyades.select_related("insignia")
+        serializer = UsuariInsigniaSerializer(registres, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(tags=["Usuaris · Me"], summary="Comprovar i otorgar noves insígnies")
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="me/premis/check",
+        permission_classes=[IsAuthenticated],
+    )
+    def check_gamificacio(self, request):
+        usuari = self._get_usuari_from_token(request)
+        noves_insignies = gestionar_puntuacio_i_insignies(usuari)
+        return Response(
+            {
+                "status": "success",
+                "new_badges": noves_insignies,
+                "current_points": usuari.punts,
+                "current_streak": usuari.ratxa,
+            }
+        )
+
+    @extend_schema(tags=["Gamificació"], summary="Veure el log de punts d'un usuari")
+    @action(detail=False, methods=["get"], url_path="me/points-log")
+    def get_points_log(self, request):
+        usuari = self._get_usuari_from_token(request)
+        logs = usuari.logs_punts.all().order_by("-data")[:20]
+        serializer = PuntLogSerializer(logs, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(
+        tags=["Gamificació"],
+        summary="Llista de totes les insígnies existents al sistema",
+    )
+    @action(detail=False, methods=["get"], url_path="insignies")
+    def list_all_insignies(self, request):
+        from ..models import Insignia
+        from ..serializers import InsigniaSerializer
+
+        insignies = Insignia.objects.all()
+        serializer = InsigniaSerializer(insignies, many=True)
+        return Response(serializer.data)
+
+    @extend_schema(tags=["Gamificació"], summary="Rànquing global d'usuaris")
+    @action(detail=False, methods=["get"], url_path="leaderboard")
+    def leaderboard(self, request):
+        top_usuaris = Usuari.objects.all().order_by("-punts")[:50]
+        data = []
+        for i, u in enumerate(top_usuaris):
+            data.append(
+                {
+                    "posicio": i + 1,
+                    "username": u.username,
+                    "punts": u.punts,
+                    "titol": u.titol,
+                    "profile_pic": u.profile_pic.url if u.profile_pic else None,
+                }
+            )
+        return Response(data)
