@@ -96,6 +96,12 @@ class GoogleLoginView(APIView):
                 },
             )
 
+            if not usuari.is_active:
+                return Response(
+                    {"error": "Compte bloquejat. Contacta amb l'administrador."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
             refresh = RefreshToken.for_user(user)
             refresh["google_id"] = usuari.google_id
 

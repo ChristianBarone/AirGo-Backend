@@ -14,6 +14,9 @@ from drf_spectacular.types import OpenApiTypes
 from ..models import Conversa, Missatge, Usuari
 from ..serializers import ConversaSerializer, MissatgeSerializer
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 
 @extend_schema_view(
     list=extend_schema(
@@ -134,6 +137,16 @@ class ConversaViewSet(viewsets.GenericViewSet):
         conversa.missatges.filter(llegit=False).exclude(emissor=usuari).update(
             llegit=True
         )
+
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            f"chat_{conversa.pk}",
+            {
+                "type": "chat.messages_read",
+                "read_by": usuari.pk,
+            },
+        )
+
         return Response({"message": "Missatges marcats com llegits"})
 
     @extend_schema(
