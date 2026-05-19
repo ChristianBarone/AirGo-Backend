@@ -8,7 +8,11 @@ from ..serializers import ExerciciSerializer
 from ..models import TemplateExercici
 from ..serializers import TemplateExerciciSerializer
 from ..services.gamificacio import gestionar_puntuacio_i_insignies
-from ..services.objectius_exercici import create_objectius
+from ..services.objectius_exercici import (
+    create_objectius,
+    calcular_medalla_obtinguda,
+    calcular_recompensa,
+)
 
 
 class ExerciciViewSet(viewsets.ModelViewSet):
@@ -86,6 +90,28 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         serializer = ExerciciSerializer(exercici)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="finalitzar-exercici")
+    def finalitzar_exercici(self, request, pk=None):
+        exercici = self.get_object()
+
+        exercici.duration_seconds = request.data.get("duration_seconds")
+        exercici.distance_meters = request.data.get("distance_meters")
+        exercici.completat = request.data.get("completat")
+        exercici.average_speed = request.data.get("average_speed")
+        exercici.save()
+
+        medalla = calcular_medalla_obtinguda(exercici)
+        airCoins = calcular_recompensa(medalla, exercici)
+
+        exercici.medalla_obtinguda = medalla
+        exercici.save()
+
+        serializer = ExerciciSerializer(exercici)
+        data = serializer.data
+        data["airCoins_guanyats:"] = airCoins
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class TemplateExerciciViewSet(viewsets.ModelViewSet):

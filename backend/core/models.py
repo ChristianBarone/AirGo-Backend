@@ -236,6 +236,9 @@ class Exercici(models.Model):
         blank=True,
         related_name="exercicis_asociats",
     )
+    medalla_obtinguda = models.CharField(
+        max_length=3, choices=CategoriaObjectiu.choices, null=True, blank=True
+    )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
     distanciaFeta = models.FloatField(default=0.0)

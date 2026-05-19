@@ -1,4 +1,5 @@
 import numpy as np
+import re
 from datetime import timedelta
 from django.utils import timezone
 from django.db.models import F, ExpressionWrapper, FloatField, Avg
@@ -6,12 +7,76 @@ from ..models import Exercici, ObjectiuExercici
 
 
 def format_ritme_min_km(segons_per_km):
-    """Transforma segundos por kilómetro a un string con formato M:SS"""
     if not segons_per_km or np.isnan(segons_per_km):
         return "0:00"
     minuts = int(segons_per_km // 60)
     segons = int(segons_per_km % 60)
-    return f"{minuts}:{segons:02d}"  # :02d asegura que si son 5 segundos, pinte :05
+    return f"{minuts}:{segons:02d}"
+
+
+def format_ritme_seg(descripcio):
+    match = re.search(r"(\d+):(\d{2})", descripcio)
+    if match:
+        minuts, segons = map(int, match.groups())
+        return (minuts * 60) + segons
+    return None
+
+
+def calcular_medalla_obtinguda(exercici):
+    if (
+        not exercici.completat
+        or exercici.distance_meters <= 0
+        or exercici.duration_seconds <= 0
+    ):
+        return None
+
+    ritme_real_segons_km = exercici.duration_seconds / (
+        exercici.distance_meters / 1000.0
+    )
+    objectius = exercici.objectius.all()
+    obj_or = objectius.filter(categoria="OR").first()
+    obj_plata = objectius.filter(categoria="PLA").first()
+    obj_bronze = objectius.filter(categoria="BRO").first()
+
+    if obj_or:
+        if "Completar l'exercici." in obj_or.descripcio:
+            return "OR"
+
+        segons_requerits_or = format_ritme_seg(obj_or.descripcio)
+        if segons_requerits_or and ritme_real_segons_km <= segons_requerits_or:
+            return "OR"
+
+    if obj_plata:
+        if "Completar l'exercici." in obj_plata.descripcio:
+            return "PLA"
+
+        segons_requerits_plata = format_ritme_seg(obj_plata.descripcio)
+        if segons_requerits_plata and ritme_real_segons_km <= segons_requerits_plata:
+            return "PLA"
+
+    if obj_bronze:
+        return "BRO"
+
+    return None
+
+
+def calcular_recompensa(medalla, exercici):
+    if medalla is None:
+        return 0
+
+    objectius = exercici.objectius.all()
+    obj_or = objectius.filter(categoria="OR").first()
+    obj_plata = objectius.filter(categoria="PLA").first()
+    obj_bronze = objectius.filter(categoria="BRO").first()
+    recompensa = obj_bronze.recompensa
+
+    if medalla != "BRO":
+        recompensa += obj_plata.recompensa
+        if medalla != "PLA":
+            recompensa += obj_or.recompensa
+        else:
+            return recompensa
+    return recompensa
 
 
 # todo: MAYBE implementar més objectius depenent de tipusExercici

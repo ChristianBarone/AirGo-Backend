@@ -125,6 +125,7 @@ class ExerciciSerializer(serializers.ModelSerializer):
             "id",
             "template",
             "objectius",
+            "medalla_obtinguda",
             "dataInici",
             "completat",
             "distanciaFeta",
