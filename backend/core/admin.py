@@ -22,15 +22,39 @@ from .models import (
     PuntLog,
 )
 
+
 # ── Usuarios y Perfiles ───────────────────────────────────────────────────────
-
-
 @admin.register(Usuari)
 class UsuariAdmin(admin.ModelAdmin):
-    # Solo campos que existen en tu models.py actual
-    list_display = ("username", "punts", "pes", "altura", "idioma", "ratxa")
+    list_display = (
+        "username",
+        "punts",
+        "pes",
+        "altura",
+        "idioma",
+        "ratxa",
+        "estat_compte",
+    )
     search_fields = ("username", "google_id")
-    list_filter = ("idioma", "dificultatPla", "teBici")
+    list_filter = ("idioma", "dificultatPla", "teBici", "is_active")
+    actions = ["bloquejar_usuaris", "desbloquejar_usuaris"]
+
+    def estat_compte(self, obj):
+        if obj.is_active:
+            return format_html('<span style="color:green;">✅ Actiu</span>')
+        return format_html('<span style="color:red;">🔒 Bloquejat</span>')
+
+    estat_compte.short_description = "Estat"
+
+    @admin.action(description="🔒 Bloquejar usuaris seleccionats")
+    def bloquejar_usuaris(self, request, queryset):
+        updated = queryset.update(is_active=False)
+        self.message_user(request, f"{updated} usuari(s) bloquejat(s).")
+
+    @admin.action(description="🔓 Desbloquejar usuaris seleccionats")
+    def desbloquejar_usuaris(self, request, queryset):
+        updated = queryset.update(is_active=True)
+        self.message_user(request, f"{updated} usuari(s) desbloquejat(s).")
 
 
 @admin.register(Amistat)
@@ -40,7 +64,6 @@ class AmistatAdmin(admin.ModelAdmin):
 
 
 # ── Rutas y Bicing ────────────────────────────────────────────────────────────
-
 admin.site.register(Route)
 
 
@@ -95,8 +118,6 @@ class ExerciciAdmin(admin.ModelAdmin):
 
 
 # ── Chat y Mensajes ───────────────────────────────────────────────────────────
-
-
 @admin.register(Conversa)
 class ConversaAdmin(admin.ModelAdmin):
     list_display = ("id", "usuari_1", "usuari_2", "creada_at")
@@ -110,8 +131,6 @@ class MissatgeAdmin(admin.ModelAdmin):
 
 
 # ── Foros ─────────────────────────────────────────────────────────────────────
-
-
 @admin.register(Forum)
 class ForumAdmin(admin.ModelAdmin):
     list_display = ("nom", "creat_per", "creat_at")
@@ -124,8 +143,6 @@ class ForumFavoritAdmin(admin.ModelAdmin):
 
 
 # ── Gamificación ──────────────────────────────────────────────────────────
-
-
 @admin.register(Titol)
 class TitolAdmin(admin.ModelAdmin):
     list_display = ("nom", "descripcio")
@@ -156,7 +173,7 @@ class InsigniaAdmin(admin.ModelAdmin):
 
 @admin.register(UsuariInsignia)
 class UsuariInsigniaAdmin(admin.ModelAdmin):
-    list_display = ("usuari", "insignia")  # Si has afegit data_guanyada, posa-ho aquí
+    list_display = ("usuari", "insignia")
     list_filter = ("insignia",)
 
 
