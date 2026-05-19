@@ -21,6 +21,7 @@ class DifPlaEntrenament(models.TextChoices):
     NORMAL = "NOR", "Normal"
     INTENS = "INT", "Intens"
 
+
 class CategoriaObjectiu(models.TextChoices):
     OR = "OR", "Or"
     PLATA = "PLA", "Plata"
@@ -205,15 +206,19 @@ class TemplateExercici(models.Model):
     def __str__(self):
         return self.nom
 
+
 class ObjectiuExercici(models.Model):
     categoria = models.CharField(
-        max_length=3, choices=CategoriaObjectiu.choices, default=CategoriaObjectiu.BRONZE
+        max_length=3,
+        choices=CategoriaObjectiu.choices,
+        default=CategoriaObjectiu.BRONZE,
     )
     descripcio = models.TextField(blank=True)
     recompensa = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.categoria} - {self.descripcio[:20]}"
+
 
 class Exercici(models.Model):
     usuari = models.ForeignKey(

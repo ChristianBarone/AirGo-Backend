@@ -4,29 +4,28 @@ from django.utils import timezone
 from django.db.models import F, ExpressionWrapper, FloatField, Avg
 from ..models import Exercici, ObjectiuExercici
 
+
 def format_ritme_min_km(segons_per_km):
     """Transforma segundos por kilómetro a un string con formato M:SS"""
     if not segons_per_km or np.isnan(segons_per_km):
         return "0:00"
     minuts = int(segons_per_km // 60)
     segons = int(segons_per_km % 60)
-    return f"{minuts}:{segons:02d}" # :02d asegura que si son 5 segundos, pinte :05
+    return f"{minuts}:{segons:02d}"  # :02d asegura que si son 5 segundos, pinte :05
+
 
 # todo: MAYBE implementar més objectius depenent de tipusExercici
 # todo: MAYBE implementar més objectius depenent de distància de ruta
 def create_objectius(usuari):
     historico = Exercici.objects.filter(
-        usuari=usuari,
-        completat=True,
-        duration_seconds__gt=0,
-        distance_meters__gt = 0
+        usuari=usuari, completat=True, duration_seconds__gt=0, distance_meters__gt=0
     )
 
     # no me fio del average speed xdd
     historico_ritmos = historico.annotate(
         ritme_segons_km=ExpressionWrapper(
-            F('duration_seconds') / (F('distance_meters') / 1000.0),
-            output_field=FloatField()
+            F("duration_seconds") / (F("distance_meters") / 1000.0),
+            output_field=FloatField(),
         )
     )
 
@@ -35,9 +34,12 @@ def create_objectius(usuari):
 
     # Plata: promig històric
     fa_tres_mesos = timezone.now() - timedelta(days=90)
-    hi_ha_exercicis_antics = historico_ritmos.filter(created_at__lt=fa_tres_mesos).exists()
-    hi_ha_exercicis_recents = historico_ritmos.filter(created_at__gte=fa_tres_mesos).exists()
-
+    hi_ha_exercicis_antics = historico_ritmos.filter(
+        created_at__lt=fa_tres_mesos
+    ).exists()
+    hi_ha_exercicis_recents = historico_ritmos.filter(
+        created_at__gte=fa_tres_mesos
+    ).exists()
 
     # si l'usuari no ha completat el pla inicial o no ha sigut actiu, completar exercici
     if historico_ritmos.count() < 6 or not hi_ha_exercicis_recents:
@@ -45,14 +47,26 @@ def create_objectius(usuari):
     else:
         # canviar a últims tres mesos si fa exercicis fa més temps i ha sigut actiu recentment
         if hi_ha_exercicis_antics and hi_ha_exercicis_recents:
-            ritmos_filtrados_plata = historico_ritmos.filter(created_at__gte=fa_tres_mesos)
-            promig_segons_km = ritmos_filtrados_plata.aggregate(Avg('ritme_segons_km'))['ritme_segons_km__avg']
+            ritmos_filtrados_plata = historico_ritmos.filter(
+                created_at__gte=fa_tres_mesos
+            )
+            promig_segons_km = ritmos_filtrados_plata.aggregate(Avg("ritme_segons_km"))[
+                "ritme_segons_km__avg"
+            ]
             ritme_formatejat = format_ritme_min_km(promig_segons_km)
-            req_plata = f"Completar l'exercici superant el teu ritme promig recent: " + ritme_formatejat
+            req_plata = (
+                f"Completar l'exercici superant el teu ritme promig recent:"
+                f" {ritme_formatejat}."
+            )
         else:
-            promig_segons_km = historico_ritmos.aggregate(Avg('ritme_segons_km'))['ritme_segons_km__avg']
+            promig_segons_km = historico_ritmos.aggregate(Avg("ritme_segons_km"))[
+                "ritme_segons_km__avg"
+            ]
             ritme_formatejat = format_ritme_min_km(promig_segons_km)
-            req_plata = f"Completar l'exercici superant el teu ritme promig històric: " + ritme_formatejat
+            req_plata = (
+                f"Completar l'exercici superant el teu ritme promig històric: "
+                f" {ritme_formatejat}."
+            )
 
     # Or: Top 25% superior de ritmes
     # si l'usuari no ha completat el pla inicial, completar exercici
@@ -62,32 +76,30 @@ def create_objectius(usuari):
         # canviar a últims tres mesos si fa exercicis fa més temps i ha sigut actiu recentment
         if hi_ha_exercicis_antics and hi_ha_exercicis_recents:
             ritmos_filtrados_or = historico_ritmos.filter(created_at__gte=fa_tres_mesos)
-            llista_ritmos = list(ritmos_filtrados_or.values_list('ritme_segons_km', flat=True))
+            llista_ritmos = list(
+                ritmos_filtrados_or.values_list("ritme_segons_km", flat=True)
+            )
             tall_top_25_segons = np.percentile(llista_ritmos, 25)
             ritme_or_formatejat = format_ritme_min_km(tall_top_25_segons)
             req_or = "Completar l'exercici superant el ritme: " + ritme_or_formatejat
         else:
-            llista_ritmos = list(historico_ritmos.values_list('ritme_segons_km', flat=True))
+            llista_ritmos = list(
+                historico_ritmos.values_list("ritme_segons_km", flat=True)
+            )
             tall_top_25_segons = np.percentile(llista_ritmos, 25)
             ritme_or_formatejat = format_ritme_min_km(tall_top_25_segons)
             req_or = "Completar l'exercici superant el ritme: " + ritme_or_formatejat
 
     obj_bronze = ObjectiuExercici.objects.create(
-        categoria="BRO",
-        descripcio=req_bronze,
-        recompensa=10
+        categoria="BRO", descripcio=req_bronze, recompensa=10
     )
 
     obj_plata = ObjectiuExercici.objects.create(
-        categoria="PLA",
-        descripcio=req_plata,
-        recompensa=20
+        categoria="PLA", descripcio=req_plata, recompensa=20
     )
 
     obj_or = ObjectiuExercici.objects.create(
-        categoria="OR",
-        descripcio=req_or,
-        recompensa=30
+        categoria="OR", descripcio=req_or, recompensa=30
     )
 
     return [obj_bronze, obj_plata, obj_or]

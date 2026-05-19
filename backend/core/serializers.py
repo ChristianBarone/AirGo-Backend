@@ -145,7 +145,9 @@ class ExerciciSerializer(serializers.ModelSerializer):
                 instance.template
             ).data
         # Obtenemos todos los objetivos asociados a este ejercicio
-        representation['objectius'] = ObjectiuSimpleSerializer(instance.objectius.all(), many=True).data
+        representation["objectius"] = ObjectiuSimpleSerializer(
+            instance.objectius.all(), many=True
+        ).data
         return representation
 
 

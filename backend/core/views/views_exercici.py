@@ -60,10 +60,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @extend_schema(
-        request=None,
-        responses={200: ExerciciSerializer}
-    )
+    @extend_schema(request=None, responses={200: ExerciciSerializer})
     @action(
         detail=True,
         methods=["post"],
