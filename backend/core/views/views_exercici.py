@@ -98,7 +98,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         exercici.duration_seconds = request.data.get("duration_seconds")
         exercici.distance_meters = request.data.get("distance_meters")
         exercici.completat = request.data.get("completat")
-        exercici.average_speed = request.data.get("average_speed")
+        exercici.avg_speed_kmh = request.data.get("avg_speed_kmh")
         exercici.save()
 
         medalla = calcular_medalla_obtinguda(exercici)
