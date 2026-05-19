@@ -21,6 +21,7 @@ class DifPlaEntrenament(models.TextChoices):
     NORMAL = "NOR", "Normal"
     INTENS = "INT", "Intens"
 
+
 class SensacioExercici(models.IntegerChoices):
     MOLT_MALAMENT = 1, "Molt Malament"
     MALAMENT = 2, "Malament"
