@@ -88,7 +88,6 @@ class ExerciciAdmin(admin.ModelAdmin):
         "usuari",
         "dataInici",
         "completat",
-        "distanciaObjectiu",
         "distanciaFeta",
     )
     list_filter = ("completat",)

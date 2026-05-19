@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -59,7 +60,15 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
         return response
 
-    @action(detail=True, methods=["post"], url_path="inicialitzar-objectius")
+    @extend_schema(
+        request=None,
+        responses={200: ExerciciSerializer}
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="inicialitzar-objectius",
+    )
     def inicialitzar_objectius(self, request, pk=None):
         exercici = self.get_object()
         try:

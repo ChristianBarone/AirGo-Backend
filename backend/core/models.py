@@ -233,9 +233,7 @@ class Exercici(models.Model):
     )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
-    distanciaObjectiu = models.FloatField(default=0.0)
     distanciaFeta = models.FloatField(default=0.0)
-    # campos existentes
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)

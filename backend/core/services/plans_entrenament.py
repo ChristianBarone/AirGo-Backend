@@ -21,7 +21,6 @@ def create_ini_plan(usuari, pla):
             usuari=usuari,
             template=template,  # ← añadir esto
             dataInici=timezone.now(),  # ← añadir esto
-            distanciaObjectiu=0.0,
             distanciaFeta=0.0,
             completat=False,
             distance_meters=0.0,

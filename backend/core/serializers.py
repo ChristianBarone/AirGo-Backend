@@ -127,7 +127,6 @@ class ExerciciSerializer(serializers.ModelSerializer):
             "objectius",
             "dataInici",
             "completat",
-            "distanciaObjectiu",
             "distanciaFeta",
             "distance_meters",
             "duration_seconds",
