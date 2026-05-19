@@ -27,6 +27,14 @@ class CategoriaObjectiu(models.TextChoices):
     BRONZE = "BRO", "Bronze"
 
 
+class SensacioExercici(models.IntegerChoices):
+    MOLT_MALAMENT = 1, "Molt Malament"
+    MALAMENT = 2, "Malament"
+    NORMAL = 3, "Normal"
+    BE = 4, "Be"
+    MOLT_BE = 5, "Molt Be"
+
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -233,6 +241,10 @@ class Exercici(models.Model):
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
+    sensacio = models.CharField(
+        max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL
+    )
+    comentari = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"
