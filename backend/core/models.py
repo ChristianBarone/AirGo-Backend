@@ -46,10 +46,11 @@ class Usuari(models.Model):
     )
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
-    titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
+    titol = models.CharField(max_length=100, blank=True)
     fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
     ultima_activitat = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.username
@@ -75,7 +76,6 @@ class Usuari(models.Model):
 
         if hi_ha_canvis:
             self.save()
-        # no se necesita, solo es confirmación
         return hi_ha_canvis
 
     def verificar_i_resetejar_ratxa(self):
