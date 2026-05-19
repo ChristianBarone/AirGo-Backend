@@ -81,6 +81,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         )
 
+    async def chat_messages_read(self, event):
+        """Reenvía al WebSocket que los mensajes han sido leídos."""
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": "messages_read",
+                    "read_by": event["read_by"],
+                }
+            )
+        )
+
     # ── DB helpers (sync → async) ─────────────────────────────────────────────
 
     @database_sync_to_async
