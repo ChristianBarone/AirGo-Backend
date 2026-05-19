@@ -105,14 +105,42 @@ class UsuariTitolSerializer(serializers.ModelSerializer):
         fields = ["titol"]
 
 
-class ExerciciPolymorphicSerializer(serializers.ModelSerializer):
+class TemplateExerciciSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemplateExercici
+        fields = ["id", "nom", "descripcio", "tipusExercici"]
+
+
+class ExerciciSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = Exercici
-        fields = ["id", "dataInici", "completat", "distanciaObjectiu", "distanciaFeta"]
+        fields = [
+            "id",
+            "template",
+            "dataInici",
+            "completat",
+            "distanciaObjectiu",
+            "distanciaFeta",
+            "distance_meters",
+            "duration_seconds",
+            "avg_speed_kmh",
+            "route_points",
+            "created_at",
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Si el ejercicio tiene una plantilla asignada, la serializamos con el detalle completo
+        if instance.template:
+            representation["template"] = TemplateExerciciSimpleSerializer(
+                instance.template
+            ).data
+        return representation
 
 
 class TemplateExerciciSerializer(serializers.ModelSerializer):
-    exercicis = ExerciciPolymorphicSerializer(
+    exercicis = ExerciciSerializer(
         many=True, read_only=True, source="instancies_exercici"
     )
 
@@ -129,18 +157,6 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ["id", "diesDurada", "numEntrenamentsSetmanals", "templates"]
-
-
-class ExerciciSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Exercici
-        fields = [
-            "id",
-            "distance_meters",
-            "duration_seconds",
-            "avg_speed_kmh",
-            "route_points",
-        ]
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
