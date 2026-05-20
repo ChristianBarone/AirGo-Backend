@@ -16,6 +16,7 @@ from .models import (
     Insignia,
     UsuariInsignia,
     PuntLog,
+    ObjectiuExercici,
 )
 import os
 
@@ -111,16 +112,22 @@ class TemplateExerciciSimpleSerializer(serializers.ModelSerializer):
         fields = ["id", "nom", "descripcio", "tipusExercici"]
 
 
-class ExerciciSerializer(serializers.ModelSerializer):
+class ObjectiuSimpleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ObjectiuExercici
+        fields = ["id", "categoria", "descripcio", "recompensa"]
 
+
+class ExerciciSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercici
         fields = [
             "id",
             "template",
+            "objectius",
+            "medalla_obtinguda",
             "dataInici",
             "completat",
-            "distanciaObjectiu",
             "distanciaFeta",
             "distance_meters",
             "duration_seconds",
@@ -138,6 +145,10 @@ class ExerciciSerializer(serializers.ModelSerializer):
             representation["template"] = TemplateExerciciSimpleSerializer(
                 instance.template
             ).data
+        # Obtenemos todos los objetivos asociados a este ejercicio
+        representation["objectius"] = ObjectiuSimpleSerializer(
+            instance.objectius.all(), many=True
+        ).data
         return representation
 
 

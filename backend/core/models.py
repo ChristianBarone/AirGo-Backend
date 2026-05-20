@@ -22,6 +22,12 @@ class DifPlaEntrenament(models.TextChoices):
     INTENS = "INT", "Intens"
 
 
+class CategoriaObjectiu(models.TextChoices):
+    OR = "OR", "Or"
+    PLATA = "PLA", "Plata"
+    BRONZE = "BRO", "Bronze"
+
+
 class SensacioExercici(models.IntegerChoices):
     MOLT_MALAMENT = 1, "Molt Malament"
     MALAMENT = 2, "Malament"
@@ -201,6 +207,19 @@ class TemplateExercici(models.Model):
         return self.nom
 
 
+class ObjectiuExercici(models.Model):
+    categoria = models.CharField(
+        max_length=3,
+        choices=CategoriaObjectiu.choices,
+        default=CategoriaObjectiu.BRONZE,
+    )
+    descripcio = models.TextField(blank=True)
+    recompensa = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.categoria} - {self.descripcio[:20]}"
+
+
 class Exercici(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
@@ -212,11 +231,17 @@ class Exercici(models.Model):
         blank=True,
         related_name="instancies_exercici",
     )
+    objectius = models.ManyToManyField(
+        ObjectiuExercici,
+        blank=True,
+        related_name="exercicis_asociats",
+    )
+    medalla_obtinguda = models.CharField(
+        max_length=3, choices=CategoriaObjectiu.choices, null=True, blank=True
+    )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
-    distanciaObjectiu = models.FloatField(default=0.0)
     distanciaFeta = models.FloatField(default=0.0)
-    # campos existentes
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
