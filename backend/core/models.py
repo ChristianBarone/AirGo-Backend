@@ -57,6 +57,8 @@ class Usuari(models.Model):
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
     ultima_activitat = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    titols_pendents = models.IntegerField(default=0)
+    ultim_milestone_titols = models.IntegerField(default=0)
 
     def __str__(self):
         return self.username
@@ -132,6 +134,7 @@ class Amistat(models.Model):
 class Titol(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField(blank=True)
+    punts_minims = models.IntegerField(default=0)
 
     def __str__(self):
         return self.nom

@@ -13,7 +13,7 @@ from drf_spectacular.utils import (
 )
 from drf_spectacular.types import OpenApiTypes
 
-from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat
+from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat, Titol
 from ..serializers import (
     UsuariSerializer,
     UsuariTitolSerializer,
@@ -682,3 +682,52 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 }
             )
         return Response(data)
+
+    @action(detail=False, methods=["get"], url_path="me/titols-disponibles")
+    def get_available_titles(self, request):
+        usuari = self._get_usuari_from_token(request)
+
+        if usuari.titols_pendents <= 0:
+            return Response({"error": "No tens cap tria de títol pendent"}, status=400)
+
+        # Busquem títols que:
+        # 1. L'usuari encara NO tingui
+        # 2. El seu rang (punts_minims) sigui apte per a la puntuació actual
+        ja_tinguts = UsuariTitol.objects.filter(usuari=usuari).values_list(
+            "titol_id", flat=True
+        )
+        pool = list(
+            Titol.objects.exclude(id__in=ja_tinguts).filter(
+                punts_minims__lte=usuari.punts
+            )
+        )
+
+        # Triem 5 aleatoris d'aquest pool
+        import random
+
+        titols_triats = random.sample(pool, min(len(pool), 5))
+
+        from ..serializers import TitolSerializer
+
+        serializer = TitolSerializer(titols_triats, many=True)
+        return Response(
+            {"titols_pendents": usuari.titols_pendents, "opcions": serializer.data}
+        )
+
+    @action(detail=False, methods=["post"], url_path="me/desbloquejar-titol")
+    def unlock_title(self, request):
+        usuari = self._get_usuari_from_token(request)
+        titol_id = request.data.get("titol_id")
+
+        if usuari.titols_pendents <= 0:
+            return Response({"error": "No tens cap tria de títol pendent"}, status=400)
+
+        try:
+            titol = Titol.objects.get(id=titol_id)
+            # Vinculem el títol triat i restem una oportunitat
+            UsuariTitol.objects.get_or_create(usuari=usuari, titol=titol)
+            usuari.titols_pendents -= 1
+            usuari.save()
+            return Response({"status": "success", "titol_desbloquejat": titol.nom})
+        except Titol.DoesNotExist:
+            return Response({"error": "El títol no existeix"}, status=404)
