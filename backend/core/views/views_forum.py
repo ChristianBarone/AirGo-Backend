@@ -2,20 +2,47 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
+from drf_spectacular.utils import (
+    extend_schema,
+    extend_schema_view,
+    OpenApiParameter,
+    OpenApiResponse,
+)
+from drf_spectacular.types import OpenApiTypes
+
 from ..models import Forum, ForumFavorit, Usuari
-from ..serializers import ForumSerializer, ForumFavoritSerializer
+from ..serializers import (
+    ForumSerializer,
+    ForumFavoritSerializer,
+    MissatgeForumSerializer,
+)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Forum"],
+        summary="Listar foros",
+        responses={200: ForumSerializer(many=True)},
+    ),
+    create=extend_schema(
+        tags=["Forum"],
+        summary="Crear foro",
+        responses={201: ForumSerializer},
+    ),
+    destroy=extend_schema(
+        tags=["Forum"],
+        summary="Eliminar foro",
+        responses={
+            204: OpenApiResponse(description="Fòrum eliminat"),
+            403: OpenApiResponse(description="Només el creador pot eliminar"),
+        },
+    ),
+)
 class ForumViewSet(ModelViewSet):
-    """
-    GET  /api/forums/        → llista (search opcional per ?search=)
-    POST /api/forums/        → crea (creat_per des del token)
-    DEL  /api/forums/{id}/   → elimina (només el creador)
-    """
-
     http_method_names = ["get", "post", "delete", "head", "options"]
 
     def get_queryset(self):
@@ -29,7 +56,6 @@ class ForumViewSet(ModelViewSet):
         return ForumSerializer
 
     def perform_create(self, serializer):
-
         usuari = get_object_or_404(Usuari, pk=self.request.user.id)
         serializer.save(creat_per=usuari)
 
@@ -42,6 +68,33 @@ class ForumViewSet(ModelViewSet):
             )
         forum.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        tags=["Forum"],
+        summary="Historial de mensajes del foro",
+        parameters=[
+            OpenApiParameter(
+                "limit", OpenApiTypes.INT, OpenApiParameter.QUERY, required=False
+            ),
+            OpenApiParameter(
+                "before", OpenApiTypes.INT, OpenApiParameter.QUERY, required=False
+            ),
+        ],
+        responses={200: MissatgeForumSerializer(many=True)},
+    )
+    @action(detail=True, methods=["get"], url_path="messages")
+    def messages(self, request, pk=None):
+        forum = self.get_object()
+        limit = int(request.query_params.get("limit", 50))
+        before = request.query_params.get("before")
+
+        qs = forum.missatges.all()
+        if before:
+            qs = qs.filter(pk__lt=before)
+        missatges = qs.order_by("-enviat_at")[:limit]
+
+        serializer = MissatgeForumSerializer(reversed(list(missatges)), many=True)
+        return Response(serializer.data)
 
 
 class UsuariForumsFavoritsView(APIView):
