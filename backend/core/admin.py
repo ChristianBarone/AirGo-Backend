@@ -128,7 +128,7 @@ class ForumFavoritAdmin(admin.ModelAdmin):
 
 @admin.register(Titol)
 class TitolAdmin(admin.ModelAdmin):
-    list_display = ("nom", "descripcio")
+    list_display = ("nom", "descripcio", "punts_minims")
 
 
 @admin.register(UsuariTitol)

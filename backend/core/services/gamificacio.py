@@ -1,11 +1,13 @@
 from django.db.models import Sum
 from datetime import date
 from ..models import UsuariInsignia, Insignia, PuntLog, Exercici
+import sys
 
 
 def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     # S'executa en acabar un exercici, retorna les insignies guanyades amb l'exercici
     avui = date.today()
+    usuari.refresh_from_db()
 
     usuari.verificar_i_resetejar_ratxa()
 
@@ -28,6 +30,14 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
             quantitat=punts_base + punts_distancia,
             motiu=f"Exercici completat: {distancia_km:.2f} km",
         )
+
+    fita_actual = usuari.punts // 100  # Exemple: 250 punts // 100 = 2
+    if fita_actual > usuari.ultim_milestone_titols:
+        diferencia = fita_actual - usuari.ultim_milestone_titols
+        usuari.titols_pendents += diferencia
+        usuari.ultim_milestone_titols = fita_actual
+
+    usuari.save()
 
     qs_anteriors = Exercici.objects.filter(usuari=usuari, completat=True)
     if exercici:

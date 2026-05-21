@@ -37,6 +37,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
             response_data["new_badges"] = noves_insignies
             response_data["points_earned_total"] = usuari.punts
             response_data["current_streak"] = usuari.ratxa
+            response_data["titols_pendents"] = usuari.titols_pendents
 
         return Response(response_data, status=status.HTTP_201_CREATED)
 
