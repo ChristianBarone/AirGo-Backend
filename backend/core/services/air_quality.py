@@ -104,9 +104,9 @@ def get_air_quality_near(lat, lon, radio_km=5):
     Se agrupa por estación y se conserva el peor AQI encontrado entre los contaminantes
     disponibles para esa estación.
     """
-    params = {"$limit": 5000}
+    params = {"$limit": 100}
 
-    response = requests.get(AIR_QUALITY_URL, params=params, timeout=15)
+    response = requests.get(AIR_QUALITY_URL, params=params, timeout=30)
     response.raise_for_status()
     data = response.json()
 

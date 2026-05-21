@@ -22,6 +22,20 @@ class DifPlaEntrenament(models.TextChoices):
     INTENS = "INT", "Intens"
 
 
+class CategoriaObjectiu(models.TextChoices):
+    OR = "OR", "Or"
+    PLATA = "PLA", "Plata"
+    BRONZE = "BRO", "Bronze"
+
+
+class SensacioExercici(models.IntegerChoices):
+    MOLT_MALAMENT = 1, "Molt Malament"
+    MALAMENT = 2, "Malament"
+    NORMAL = 3, "Normal"
+    BE = 4, "Be"
+    MOLT_BE = 5, "Molt Be"
+
+
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     username = models.CharField(max_length=255, unique=True)
@@ -38,10 +52,11 @@ class Usuari(models.Model):
     )
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
-    titol = models.CharField(max_length=100, blank=True)  # Título activo en el perfil
+    titol = models.CharField(max_length=100, blank=True)
     fcm_token = models.CharField(max_length=255, blank=True, null=True)
     plans = models.ManyToManyField("PlaEntrenament", blank=True, related_name="usuaris")
     ultima_activitat = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
     titols_pendents = models.IntegerField(default=0)
     ultim_milestone_titols = models.IntegerField(default=0)
 
@@ -69,7 +84,6 @@ class Usuari(models.Model):
 
         if hi_ha_canvis:
             self.save()
-        # no se necesita, solo es confirmación
         return hi_ha_canvis
 
     def verificar_i_resetejar_ratxa(self):
@@ -196,6 +210,19 @@ class TemplateExercici(models.Model):
         return self.nom
 
 
+class ObjectiuExercici(models.Model):
+    categoria = models.CharField(
+        max_length=3,
+        choices=CategoriaObjectiu.choices,
+        default=CategoriaObjectiu.BRONZE,
+    )
+    descripcio = models.TextField(blank=True)
+    recompensa = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.categoria} - {self.descripcio[:20]}"
+
+
 class Exercici(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
@@ -207,16 +234,26 @@ class Exercici(models.Model):
         blank=True,
         related_name="instancies_exercici",
     )
+    objectius = models.ManyToManyField(
+        ObjectiuExercici,
+        blank=True,
+        related_name="exercicis_asociats",
+    )
+    medalla_obtinguda = models.CharField(
+        max_length=3, choices=CategoriaObjectiu.choices, null=True, blank=True
+    )
     dataInici = models.DateTimeField(null=True, blank=True)
     completat = models.BooleanField(default=False)
-    distanciaObjectiu = models.FloatField(default=0.0)
     distanciaFeta = models.FloatField(default=0.0)
-    # campos existentes
     distance_meters = models.FloatField(default=0.0)
     duration_seconds = models.IntegerField(default=0)
     avg_speed_kmh = models.FloatField(default=0.0)
     route_points = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
+    sensacio = models.CharField(
+        max_length=3, choices=SensacioExercici.choices, default=SensacioExercici.NORMAL
+    )
+    comentari = models.TextField(blank=True)
 
     def __str__(self):
         return f"{self.usuari.username} - {self.distance_meters}m"

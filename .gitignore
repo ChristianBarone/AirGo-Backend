@@ -40,3 +40,5 @@ default-gh/
 
 #firebase
 firebase-credentials.json
+graphhopper/data/*.osm.pbf
+graphhopper/data/*.pbf

@@ -1,4 +1,6 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from ..models import Exercici, Usuari
@@ -6,6 +8,11 @@ from ..serializers import ExerciciSerializer
 from ..models import TemplateExercici
 from ..serializers import TemplateExerciciSerializer
 from ..services.gamificacio import gestionar_puntuacio_i_insignies
+from ..services.objectius_exercici import (
+    create_objectius,
+    calcular_medalla_obtinguda,
+    calcular_recompensa,
+)
 
 
 class ExerciciViewSet(viewsets.ModelViewSet):
@@ -57,6 +64,55 @@ class ExerciciViewSet(viewsets.ModelViewSet):
             response.data["current_streak"] = usuari.ratxa
 
         return response
+
+    @extend_schema(request=None, responses={200: ExerciciSerializer})
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="inicialitzar-objectius",
+    )
+    def inicialitzar_objectius(self, request, pk=None):
+        exercici = self.get_object()
+        try:
+            usuari = self._get_usuari_from_token(request)
+        except Usuari.DoesNotExist:
+            return Response(
+                {"error": "Usuario no encontrado"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        objectius = create_objectius(usuari)
+
+        if not objectius:
+            return Response(
+                {"error": "No s'han pogut generar els objectius"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        exercici.objectius.set(objectius)
+        serializer = ExerciciSerializer(exercici)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="finalitzar-exercici")
+    def finalitzar_exercici(self, request, pk=None):
+        exercici = self.get_object()
+
+        exercici.duration_seconds = request.data.get("duration_seconds")
+        exercici.distance_meters = request.data.get("distance_meters")
+        exercici.completat = request.data.get("completat")
+        exercici.avg_speed_kmh = request.data.get("avg_speed_kmh")
+        exercici.save()
+
+        medalla = calcular_medalla_obtinguda(exercici)
+        airCoins = calcular_recompensa(medalla, exercici)
+
+        exercici.medalla_obtinguda = medalla
+        exercici.save()
+
+        serializer = ExerciciSerializer(exercici)
+        data = serializer.data
+        data["airCoins_guanyats:"] = airCoins
+
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class TemplateExerciciViewSet(viewsets.ModelViewSet):
