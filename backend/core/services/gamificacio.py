@@ -2,6 +2,7 @@ from django.db.models import Sum
 from datetime import date
 from ..models import UsuariInsignia, Insignia, PuntLog, Exercici
 
+
 def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     # S'executa en acabar un exercici, retorna les insignies guanyades amb l'exercici
     avui = date.today()
