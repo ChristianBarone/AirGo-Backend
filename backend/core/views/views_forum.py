@@ -14,7 +14,7 @@ from drf_spectacular.utils import (
 )
 from drf_spectacular.types import OpenApiTypes
 
-from ..models import Forum, ForumFavorit, Usuari, MissatgeForum
+from ..models import Forum, ForumFavorit, Usuari
 from ..serializers import (
     ForumSerializer,
     ForumFavoritSerializer,
