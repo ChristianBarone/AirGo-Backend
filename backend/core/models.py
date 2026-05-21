@@ -378,3 +378,18 @@ class PuntLog(models.Model):
     quantitat = models.IntegerField()
     motiu = models.CharField(max_length=255)
     data = models.DateTimeField(auto_now_add=True)
+
+
+class MissatgeForum(models.Model):
+    forum = models.ForeignKey(Forum, on_delete=models.CASCADE, related_name="missatges")
+    emissor = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="missatges_forum_enviats"
+    )
+    contingut = models.TextField()
+    enviat_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["enviat_at"]
+
+    def __str__(self):
+        return f"{self.emissor.username}@{self.forum.nom}: {self.contingut[:40]}"

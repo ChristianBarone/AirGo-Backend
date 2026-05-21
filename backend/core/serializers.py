@@ -17,6 +17,7 @@ from .models import (
     UsuariInsignia,
     PuntLog,
     ObjectiuExercici,
+    MissatgeForum,
 )
 import os
 
@@ -280,3 +281,11 @@ class PuntLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = PuntLog
         fields = ["quantitat", "motiu", "data"]
+
+
+class MissatgeForumSerializer(serializers.ModelSerializer):
+    emissor_username = serializers.CharField(source="emissor.username", read_only=True)
+
+    class Meta:
+        model = MissatgeForum
+        fields = ["id", "emissor", "emissor_username", "contingut", "enviat_at"]

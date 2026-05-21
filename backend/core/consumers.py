@@ -6,7 +6,15 @@ from django.contrib.auth.models import AnonymousUser
 from django.db import models as dm
 from .services.firebase import send_push_notification
 
-from .models import Amistat, Conversa, EstatAmistat, Missatge, Usuari
+from .models import (
+    Amistat,
+    Conversa,
+    EstatAmistat,
+    Missatge,
+    Usuari,
+    Forum,
+    MissatgeForum,
+)
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -133,3 +141,88 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 },
             )
         return missatge
+
+
+class ForumConsumer(AsyncWebsocketConsumer):
+
+    # ── Lifecycle ──────────────────────────────────────────────────────────
+
+    async def connect(self):
+        self.usuari = self.scope.get("usuari")
+
+        if not self.usuari or isinstance(self.usuari, AnonymousUser):
+            await self.close(code=4001)
+            return
+
+        forum_id = int(self.scope["url_route"]["kwargs"]["forum_id"])
+        self.forum = await self._get_forum(forum_id)
+
+        if self.forum is None:
+            await self.close(code=4004)
+            return
+
+        self.room = f"forum_{forum_id}"
+        await self.channel_layer.group_add(self.room, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        if hasattr(self, "room"):
+            await self.channel_layer.group_discard(self.room, self.channel_name)
+
+    # ── Receive (client → server) ──────────────────────────────────────────
+
+    async def receive(self, text_data):
+        try:
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
+
+        contingut = data.get("missatge", "").strip()
+        if not contingut:
+            return
+
+        missatge = await self._save_missatge(contingut)
+
+        await self.channel_layer.group_send(
+            self.room,
+            {
+                "type": "forum.missatge",
+                "id": missatge.pk,
+                "emissor_id": self.usuari.pk,
+                "emissor_username": self.usuari.username,
+                "contingut": contingut,
+                "enviat_at": missatge.enviat_at.isoformat(),
+            },
+        )
+
+    # ── Send (server → client) ─────────────────────────────────────────────
+
+    async def forum_missatge(self, event):
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "id": event["id"],
+                    "emissor_id": event["emissor_id"],
+                    "emissor_username": event["emissor_username"],
+                    "contingut": event["contingut"],
+                    "enviat_at": event["enviat_at"],
+                }
+            )
+        )
+
+    # ── DB helpers ─────────────────────────────────────────────────────────
+
+    @database_sync_to_async
+    def _get_forum(self, forum_id):
+        try:
+            return Forum.objects.get(pk=forum_id)
+        except Forum.DoesNotExist:
+            return None
+
+    @database_sync_to_async
+    def _save_missatge(self, contingut):
+        return MissatgeForum.objects.create(
+            forum=self.forum,
+            emissor=self.usuari,
+            contingut=contingut,
+        )
