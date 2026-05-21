@@ -693,19 +693,26 @@ class UsuariViewSet(viewsets.ModelViewSet):
         # Busquem títols que:
         # 1. L'usuari encara NO tingui
         # 2. El seu rang (punts_minims) sigui apte per a la puntuació actual
-        ja_tinguts = UsuariTitol.objects.filter(usuari=usuari).values_list('titol_id', flat=True)
-        pool = list(Titol.objects.exclude(id__in=ja_tinguts).filter(punts_minims__lte=usuari.punts))
+        ja_tinguts = UsuariTitol.objects.filter(usuari=usuari).values_list(
+            "titol_id", flat=True
+        )
+        pool = list(
+            Titol.objects.exclude(id__in=ja_tinguts).filter(
+                punts_minims__lte=usuari.punts
+            )
+        )
 
         # Triem 5 aleatoris d'aquest pool
         import random
+
         titols_triats = random.sample(pool, min(len(pool), 5))
 
         from ..serializers import TitolSerializer
+
         serializer = TitolSerializer(titols_triats, many=True)
-        return Response({
-            "titols_pendents": usuari.titols_pendents,
-            "opcions": serializer.data
-        })
+        return Response(
+            {"titols_pendents": usuari.titols_pendents, "opcions": serializer.data}
+        )
 
     @action(detail=False, methods=["post"], url_path="me/desbloquejar-titol")
     def unlock_title(self, request):
