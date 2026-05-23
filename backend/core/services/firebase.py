@@ -28,7 +28,7 @@ def send_push_notification(fcm_token: str, title: str, body: str, data: dict = N
             data={
                 "title": title,
                 "body": body,
-                **{str(k): str(v) for k, v in (data or {}).items()}
+                **{str(k): str(v) for k, v in (data or {}).items()},
             },
             token=fcm_token,
             android=messaging.AndroidConfig(priority="high"),
