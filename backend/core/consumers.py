@@ -138,6 +138,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "type": "chat",
                     "conversa_id": str(self.conversa.pk),
                     "emissor_id": str(self.usuari.pk),
+                    "emissor_username": self.usuari.username,
+                    "contingut": contingut[:100],
+                    "timestamp": str(int(missatge.enviat_at.timestamp())),
                 },
             )
         return missatge
