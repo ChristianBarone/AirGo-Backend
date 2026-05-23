@@ -1,7 +1,6 @@
 import os
 from django.db import models
 from datetime import date
-from django.utils import timezone
 
 
 class Idioma(models.TextChoices):
@@ -13,13 +12,12 @@ class Idioma(models.TextChoices):
 class TExercici(models.TextChoices):
     CAMINAR = "CAM", "Caminar"
     BICI = "BIC", "Bici"
-    ALTRES = "ALT", "Altres"
 
 
 class DifPlaEntrenament(models.TextChoices):
-    RELAXAT = "REL", "Relaxat"
-    NORMAL = "NOR", "Normal"
-    INTENS = "INT", "Intens"
+    PRINCIPIANT = "PRI", "Principiant"
+    INTERMEDI = "INT", "Intermedi"
+    AVANÇAT = "AVA", "Avançat"
 
 
 class CategoriaObjectiu(models.TextChoices):
@@ -48,7 +46,7 @@ class Usuari(models.Model):
     dificultatPla = models.CharField(
         max_length=3,
         choices=DifPlaEntrenament.choices,
-        default=DifPlaEntrenament.NORMAL,
+        default=DifPlaEntrenament.INTERMEDI,
     )
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
@@ -207,7 +205,11 @@ class PlaEntrenament(models.Model):
 class TemplateExercici(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField(blank=True)
-    # Cambiar default si hace falta
+    dificutat = models.CharField(
+        max_length=3,
+        choices=DifPlaEntrenament.choices,
+        default=DifPlaEntrenament.PRINCIPIANT,
+    )
     tipusExercici = models.CharField(
         max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR
     )
