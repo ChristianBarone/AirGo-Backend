@@ -95,8 +95,12 @@ _EcoRouteResponse = inline_serializer(
     fields={
         "status": serializers.CharField(help_text="'success'"),
         "route_id": serializers.IntegerField(help_text="ID de la ruta creada en BD"),
-        "start_address": serializers.CharField(help_text="Dirección del punto de inicio"),
-        "end_address": serializers.CharField(help_text="Dirección del punto de finalización"),
+        "start_address": serializers.CharField(
+            help_text="Dirección del punto de inicio"
+        ),
+        "end_address": serializers.CharField(
+            help_text="Dirección del punto de finalización"
+        ),
         "summary": inline_serializer(
             name="EcoRouteSummary",
             fields={

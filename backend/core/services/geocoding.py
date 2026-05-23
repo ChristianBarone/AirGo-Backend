@@ -3,12 +3,7 @@ import requests
 
 def get_address_from_coords(lat, lon):
     url = "https://eines.icgc.cat/geocodificador/invers"
-    params = {
-        "lat": lat,
-        "lon": lon,
-        "layers": "address",
-        "size": 1
-    }
+    params = {"lat": lat, "lon": lon, "layers": "address", "size": 1}
 
     try:
         response = requests.get(url, params=params, timeout=5)
