@@ -252,8 +252,6 @@ class ForumFavoritSerializer(serializers.ModelSerializer):
         model = ForumFavorit
         fields = ["id", "forum", "afegit_at"]
 
-        fields = ["id", "other_user", "last_message", "unread_count", "creada_at"]
-
 
 class InsigniaSerializer(serializers.ModelSerializer):
     icona = serializers.SerializerMethodField()
