@@ -45,33 +45,33 @@ def create_plan(usuari, pla):
     if not templates.exists():
         return []
 
-    # Determinamos cuántos ejercicios crear según dificultad
-    if usuari.dificultatPla == "REL":
+    # Usar nivell del plan en lugar de dificultatPla del usuario
+    if pla.nivell == 1:
         num_ejercicios = 6
-    elif usuari.dificultatPla == "NOR":
+    elif pla.nivell == 2:
         num_ejercicios = 9
     else:
         num_ejercicios = 12
 
     ejercicios_creados = []
-
     for i in range(num_ejercicios):
         template = templates[i % templates.count()]
-
-        # Creamos el ejercicio simplificado
         nuevo_ejercicio = Exercici.objects.create(
             usuari=usuari,
+            template=template,
+            dataInici=timezone.now(),
+            distanciaFeta=0.0,
+            completat=False,
             distance_meters=0.0,
             duration_seconds=0,
             avg_speed_kmh=0.0,
             route_points=[],
         )
-
         ejercicios_creados.append(nuevo_ejercicio)
 
     pla.diesDurada = 21
-    pla.save()
     pla.numEntrenamentsSetmanals = num_ejercicios // 3
+    pla.save()
     usuari.plans.add(pla)
 
     return ejercicios_creados
