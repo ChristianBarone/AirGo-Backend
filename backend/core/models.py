@@ -193,9 +193,15 @@ class Route(models.Model):
 
 
 class PlaEntrenament(models.Model):
-    diesDurada = models.IntegerField()
-    numEntrenamentsSetmanals = models.IntegerField()
-    templates = models.ManyToManyField("TemplateExercici", related_name="plans")
+    diesDurada = models.IntegerField(default=0)
+    numEntrenamentsSetmanals = models.IntegerField(default=0)
+    esport = models.IntegerField(null=True, blank=True)
+    nivell = models.IntegerField(null=True, blank=True)
+    diesSetmana = models.JSONField(default=list, blank=True)
+    dataFi = models.DateField(null=True, blank=True)
+    templates = models.ManyToManyField(
+        "TemplateExercici", related_name="plans", blank=True
+    )
 
 
 class TemplateExercici(models.Model):
