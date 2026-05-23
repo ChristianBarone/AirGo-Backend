@@ -198,6 +198,7 @@ class PlaEntrenament(models.Model):
     esport = models.IntegerField(null=True, blank=True)
     nivell = models.IntegerField(null=True, blank=True)
     diesSetmana = models.JSONField(default=list, blank=True)
+    dataFi = models.DateField(null=True, blank=True)
     templates = models.ManyToManyField(
         "TemplateExercici", related_name="plans", blank=True
     )

@@ -196,6 +196,7 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
             "esport",
             "nivell",
             "diesSetmana",
+            "dataFi",
             "templates",
         ]
 
