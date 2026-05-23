@@ -33,6 +33,7 @@ class UsuariAdmin(admin.ModelAdmin):
         "altura",
         "idioma",
         "ratxa",
+        "fcm_token",
         "estat_compte",
     )
     search_fields = ("username", "google_id")
