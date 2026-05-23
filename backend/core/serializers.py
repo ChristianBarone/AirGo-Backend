@@ -200,6 +200,13 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
             "templates",
         ]
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["templates"] = TemplateExerciciSimpleSerializer(
+            instance.templates.all(), many=True
+        ).data
+        return representation
+
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
     route = RouteSerializer(read_only=True)
