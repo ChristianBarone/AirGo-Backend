@@ -31,6 +31,7 @@ services:
     volumes:
       - ./backend/core/migrations:/app/core/migrations
       - static_volume:/app/staticfiles
+      - ./backend/firebase-credentials.json:/app/firebase-credentials.json
     networks:
       - airgo_net
 
