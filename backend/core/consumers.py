@@ -139,6 +139,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     "conversa_id": str(self.conversa.pk),
                     "emissor_id": str(self.usuari.pk),
                     "emissor_username": self.usuari.username,
+                    "emissor_profile_pic": self.usuari.profile_pic.url if self.usuari.profile_pic else "",
                     "contingut": contingut[:100],
                     "timestamp": str(int(missatge.enviat_at.timestamp())),
                 },
