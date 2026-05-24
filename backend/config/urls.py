@@ -49,7 +49,7 @@ urlpatterns = [
     path("air-quality/", AirQualityView.as_view(), name="air-quality"),
     path("route-generation/", EcoRouteView.as_view(), name="route-generation"),
     path(
-        "zone-air-quality/",
+        "api/zone-air-quality/",
         ExternalAirQualityView.as_view(),
         name="external-air-quality",
     ),
