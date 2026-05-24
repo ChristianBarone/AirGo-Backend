@@ -71,6 +71,15 @@ class Usuari(models.Model):
             pass
         super().save(*args, **kwargs)
 
+    def delete(self, *args, **kwargs):
+        # Borrar foto de perfil del disco
+        if self.profile_pic:
+            if os.path.isfile(self.profile_pic.path):
+                os.remove(self.profile_pic.path)
+        # Borrar planes de entrenamiento (ManyToMany no se borra en cascade)
+        self.plans.all().delete()
+        super().delete(*args, **kwargs)
+
     def actualitzarPerfilQuestionari(self, dades):
         camps_permesos = ["titol", "pes", "altura", "dificultatPla"]
         hi_ha_canvis = False
