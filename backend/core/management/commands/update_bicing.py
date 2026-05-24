@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from core.models import BicingEstacio
-from core.services.bicing import get_bicing_data  # ajusta el import
+from core.services.bicing import get_bicing_near
 
 
 class Command(BaseCommand):
