@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from ..models import PlaEntrenament, Usuari
+from ..models import PlaEntrenament, Usuari, TemplateExercici
 from ..serializers import PlaEntrenamentSerializer
 from ..services.plans_entrenament import create_ini_plan
 from ..services.plans_entrenament import create_plan
@@ -80,3 +80,20 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    def perform_create(self, serializer):
+        pla = serializer.save()
+
+        if not pla.templates.exists():
+            try:
+                nivell_triat = serializer.validated_data.get("nivell")
+                mapeig = {1: "PRI", 2: "INT", 3: "AVA"}
+                codi_dificultat = mapeig.get(nivell_triat, "INT")
+
+                templates_compatibles = TemplateExercici.objects.filter(
+                    dificutat=codi_dificultat
+                )
+                if templates_compatibles.exists():
+                    pla.templates.set(templates_compatibles[:3])
+            except Usuari.DoesNotExist:
+                pass

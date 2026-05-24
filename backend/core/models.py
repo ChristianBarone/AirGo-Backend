@@ -12,13 +12,12 @@ class Idioma(models.TextChoices):
 class TExercici(models.TextChoices):
     CAMINAR = "CAM", "Caminar"
     BICI = "BIC", "Bici"
-    ALTRES = "ALT", "Altres"
 
 
 class DifPlaEntrenament(models.TextChoices):
-    RELAXAT = "REL", "Relaxat"
-    NORMAL = "NOR", "Normal"
-    INTENS = "INT", "Intens"
+    PRINCIPIANT = "PRI", "Principiant"
+    INTERMEDI = "INT", "Intermedi"
+    AVANÇAT = "AVA", "Avançat"
 
 
 class CategoriaObjectiu(models.TextChoices):
@@ -47,7 +46,7 @@ class Usuari(models.Model):
     dificultatPla = models.CharField(
         max_length=3,
         choices=DifPlaEntrenament.choices,
-        default=DifPlaEntrenament.NORMAL,
+        default=DifPlaEntrenament.INTERMEDI,
     )
     idioma = models.CharField(max_length=3, choices=Idioma.choices, default=Idioma.ES)
     limitRutes = models.IntegerField()
@@ -194,15 +193,25 @@ class Route(models.Model):
 
 
 class PlaEntrenament(models.Model):
-    diesDurada = models.IntegerField()
-    numEntrenamentsSetmanals = models.IntegerField()
-    templates = models.ManyToManyField("TemplateExercici", related_name="plans")
+    diesDurada = models.IntegerField(default=0)
+    numEntrenamentsSetmanals = models.IntegerField(default=0)
+    esport = models.IntegerField(null=True, blank=True)
+    nivell = models.IntegerField(null=True, blank=True)
+    diesSetmana = models.JSONField(default=list, blank=True)
+    dataFi = models.DateField(null=True, blank=True)
+    templates = models.ManyToManyField(
+        "TemplateExercici", related_name="plans", blank=True
+    )
 
 
 class TemplateExercici(models.Model):
     nom = models.CharField(max_length=100)
     descripcio = models.TextField(blank=True)
-    # Cambiar default si hace falta
+    dificutat = models.CharField(
+        max_length=3,
+        choices=DifPlaEntrenament.choices,
+        default=DifPlaEntrenament.PRINCIPIANT,
+    )
     tipusExercici = models.CharField(
         max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR
     )

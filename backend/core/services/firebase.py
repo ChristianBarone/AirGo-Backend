@@ -21,12 +21,15 @@ def _init_firebase():
 
 def send_push_notification(fcm_token: str, title: str, body: str, data: dict = None):
     if not _init_firebase():
-        return  # sin credenciales, ignorar silenciosamente
+        return
 
     try:
         message = messaging.Message(
-            notification=messaging.Notification(title=title, body=body),
-            data={str(k): str(v) for k, v in (data or {}).items()},
+            data={
+                "title": title,
+                "body": body,
+                **{str(k): str(v) for k, v in (data or {}).items()},
+            },
             token=fcm_token,
             android=messaging.AndroidConfig(priority="high"),
         )

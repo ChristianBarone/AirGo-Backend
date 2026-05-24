@@ -165,12 +165,47 @@ class TemplateExerciciSerializer(serializers.ModelSerializer):
 
 class PlaEntrenamentSerializer(serializers.ModelSerializer):
     templates = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=TemplateExercici.objects.all()
+        many=True, queryset=TemplateExercici.objects.all(), required=False, default=[]
     )
+    diesSetmana = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=6),
+        required=False,
+        default=list,
+    )
+
+    def validate_diesSetmana(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("No puede haber días duplicados.")
+        return value
+
+    def validate(self, data):
+        dies_setmana = data.get("diesSetmana", [])
+        num_setmanals = data.get("numEntrenamentsSetmanals")
+        if dies_setmana and num_setmanals and len(dies_setmana) != num_setmanals:
+            raise serializers.ValidationError(
+                "La cantidad de días en diesSetmana debe coincidir con numEntrenamentsSetmanals."
+            )
+        return data
 
     class Meta:
         model = PlaEntrenament
-        fields = ["id", "diesDurada", "numEntrenamentsSetmanals", "templates"]
+        fields = [
+            "id",
+            "diesDurada",
+            "numEntrenamentsSetmanals",
+            "esport",
+            "nivell",
+            "diesSetmana",
+            "dataFi",
+            "templates",
+        ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["templates"] = TemplateExerciciSimpleSerializer(
+            instance.templates.all(), many=True
+        ).data
+        return representation
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):
