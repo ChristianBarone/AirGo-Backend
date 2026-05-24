@@ -203,14 +203,18 @@ class Route(models.Model):
 
 class PlaEntrenament(models.Model):
     usuari = models.ForeignKey(
-        Usuari, on_delete=models.CASCADE, related_name="plans_entrenament"
+        Usuari,
+        on_delete=models.CASCADE,
+        related_name="plans_entrenament",
+        null=True,
+        blank=True,
     )
     diesDurada = models.IntegerField(default=7)
     numEntrenamentsSetmanals = models.IntegerField(default=0)
     esport = models.CharField(
         max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR
     )
-    nivell = models.IntegerField(help_text="1: PRI, 2: INT, 3: AVA")
+    nivell = models.IntegerField(help_text="1: PRI, 2: INT, 3: AVA", default=1)
     diesSetmana = models.JSONField(
         default=list, blank=True, help_text="Llista de dies [1, 2, 4] (1=Dilluns)"
     )
