@@ -9,6 +9,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse, inline_seriali
 
 from ..services.air_quality import get_air_quality_near
 from ..services.navigation import get_eco_route
+from ..services.geocoding import get_address_from_coords
 from ..models import Route
 
 
@@ -94,6 +95,12 @@ _EcoRouteResponse = inline_serializer(
     fields={
         "status": serializers.CharField(help_text="'success'"),
         "route_id": serializers.IntegerField(help_text="ID de la ruta creada en BD"),
+        "start_address": serializers.CharField(
+            help_text="Dirección del punto de inicio"
+        ),
+        "end_address": serializers.CharField(
+            help_text="Dirección del punto de finalización"
+        ),
         "summary": inline_serializer(
             name="EcoRouteSummary",
             fields={
@@ -162,6 +169,9 @@ class EcoRouteView(APIView):
             )
 
         try:
+            start_addr = get_address_from_coords(raw_points[0][0], raw_points[0][1])
+            end_addr = get_address_from_coords(raw_points[-1][0], raw_points[-1][1])
+
             stations = get_air_quality_near(
                 raw_points[0][0], raw_points[0][1], radio_km=20
             )
@@ -191,12 +201,11 @@ class EcoRouteView(APIView):
             distance_km = round(path.get("distance", 0) / 1000, 3)
 
             route_obj = Route.objects.create(
-                name=(
-                    f"{data.get('lat_start')},{data.get('lon_start')} "
-                    f"→ {data.get('lat_end')},{data.get('lon_end')}"
-                ),
+                name=f"{start_addr} → {end_addr}",
                 start_location=f"{raw_points[0]}",
+                start_address=start_addr,
                 end_location=f"{raw_points[-1]}",
+                end_address=end_addr,
                 distance=distance_km,
                 air_quality=avg_aqi,
                 is_safe=avg_aqi < 100,
@@ -207,6 +216,8 @@ class EcoRouteView(APIView):
                 {
                     "status": "success",
                     "route_id": route_obj.id,
+                    "start_address": start_addr,
+                    "end_address": end_addr,
                     "summary": {
                         "distance_meters": round(path.get("distance", 0), 2),
                         "duration_minutes": round(path.get("time", 0) / 60000, 2),
