@@ -1,77 +1,78 @@
-from datetime import datetime, timedelta
+from datetime import timedelta, datetime
 from django.utils import timezone
-from ..models import Exercici  # Solo importamos Exercici
+from ..models import Exercici, TemplateExercici
+from .objectius_exercici import create_objectius
+
+
+def create_plan_logic(usuari, pla):
+    exercicis_per_setmana = {1: 2, 2: 4, 3: 6}
+    num_sessions_setmana = exercicis_per_setmana.get(pla.nivell, 2)
+    disponibilitat = sorted(pla.diesSetmana)
+    if not disponibilitat:
+        return [1, 2, 3, 4, 5, 6, 7]
+    sessions_reals = min(num_sessions_setmana, len(disponibilitat))
+    pas = len(disponibilitat) / sessions_reals
+    dies_triats = [disponibilitat[int(i * pas)] - 1 for i in range(sessions_reals)]
+    dies_python = [(d - 1) % 7 for d in dies_triats]
+    pla.diesSetmana = dies_triats
+    pla.numEntrenamentsSetmanals = sessions_reals
+    pla.dataFi = pla.dataInici + timedelta(days=pla.diesDurada)
+    pla.save()
+
+    templates = TemplateExercici.objects.filter(
+        dificutat={1: "PRI", 2: "INT", 3: "AVA"}.get(pla.nivell, "INT"),
+        tipusExercici=pla.esport,
+    )
+    if not templates.exists():
+        templates = TemplateExercici.objects.filter(tipusExercici=pla.esport)
+
+    template_list = list(templates)
+    if not template_list:
+        return []
+
+    pla.templates.set(template_list)
+    ejercicios_creados = []
+    entrenaments_totals_comptador = 0
+
+    for i in range(pla.diesDurada):
+        data_actual = pla.dataInici + timedelta(days=i)
+
+        if data_actual.weekday() in dies_python:
+            template = template_list[entrenaments_totals_comptador % len(template_list)]
+            dt_aware = timezone.make_aware(
+                datetime.combine(data_actual, datetime.min.time())
+            )
+
+            nou_ex = Exercici.objects.create(
+                usuari=usuari,
+                pla=pla,
+                template=template,
+                dataInici=dt_aware,
+                completat=False,
+            )
+
+            objectius = create_objectius(usuari)
+            if objectius:
+                nou_ex.objectius.set(objectius)
+
+            ejercicios_creados.append(nou_ex)
+            entrenaments_totals_comptador += 1
+
+    pla.numEntrenamentsSetmanals = sessions_reals
+    pla.dataFi = pla.dataInici + timedelta(days=pla.diesDurada)
+    pla.save()
+    usuari.plans.add(pla)
+    return ejercicios_creados
 
 
 def create_ini_plan(usuari, pla):
-    templates_ini = pla.templates.all()
-
-    if not templates_ini.exists():
-        return []
-
-    total_entrenamientos = 6
-    ejercicios_creados = []
-
-    # 3. Creación cíclica
-    for i in range(total_entrenamientos):
-        template = templates_ini[i % templates_ini.count()]
-
-        # Creamos el ejercicio usando SOLO los campos que existen en tu modelo actual
-        nuevo_ejercicio = Exercici.objects.create(
-            usuari=usuari,
-            template=template,  # ← añadir esto
-            dataInici=timezone.now(),  # ← añadir esto
-            distanciaFeta=0.0,
-            completat=False,
-            distance_meters=0.0,
-            duration_seconds=0,
-            avg_speed_kmh=0.0,
-            route_points=[],
-        )
-
-        ejercicios_creados.append(nuevo_ejercicio)
-
-    # Actualizamos los datos del plan
     pla.diesDurada = 14
-    pla.numEntrenamentsSetmanals = 3
+    pla.nivell = 1
+    if not pla.diesSetmana:
+        pla.diesSetmana = [1, 2, 3, 4, 5, 6, 7]
     pla.save()
-    usuari.plans.add(pla)
-
-    return ejercicios_creados
+    return create_plan_logic(usuari, pla)
 
 
 def create_plan(usuari, pla):
-    templates = pla.templates.all()
-    if not templates.exists():
-        return []
-
-    # Usar nivell del plan en lugar de dificultatPla del usuario
-    if pla.nivell == 1:
-        num_ejercicios = 6
-    elif pla.nivell == 2:
-        num_ejercicios = 9
-    else:
-        num_ejercicios = 12
-
-    ejercicios_creados = []
-    for i in range(num_ejercicios):
-        template = templates[i % templates.count()]
-        nuevo_ejercicio = Exercici.objects.create(
-            usuari=usuari,
-            template=template,
-            dataInici=timezone.now(),
-            distanciaFeta=0.0,
-            completat=False,
-            distance_meters=0.0,
-            duration_seconds=0,
-            avg_speed_kmh=0.0,
-            route_points=[],
-        )
-        ejercicios_creados.append(nuevo_ejercicio)
-
-    pla.diesDurada = 21
-    pla.numEntrenamentsSetmanals = num_ejercicios // 3
-    pla.save()
-    usuari.plans.add(pla)
-
-    return ejercicios_creados
+    return create_plan_logic(usuari, pla)

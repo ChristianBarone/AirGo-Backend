@@ -202,15 +202,27 @@ class Route(models.Model):
 
 
 class PlaEntrenament(models.Model):
-    diesDurada = models.IntegerField(default=0)
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="plans_entrenament"
+    )
+    diesDurada = models.IntegerField(default=7)
     numEntrenamentsSetmanals = models.IntegerField(default=0)
-    esport = models.IntegerField(null=True, blank=True)
-    nivell = models.IntegerField(null=True, blank=True)
-    diesSetmana = models.JSONField(default=list, blank=True)
+    esport = models.CharField(
+        max_length=3, choices=TExercici.choices, default=TExercici.CAMINAR
+    )
+    nivell = models.IntegerField(help_text="1: PRI, 2: INT, 3: AVA")
+    diesSetmana = models.JSONField(
+        default=list, blank=True, help_text="Llista de dies [1, 2, 4] (1=Dilluns)"
+    )
+    dataInici = models.DateField(default=date.today)
     dataFi = models.DateField(null=True, blank=True)
+    actiu = models.BooleanField(default=True)
     templates = models.ManyToManyField(
         "TemplateExercici", related_name="plans", blank=True
     )
+
+    def __str__(self):
+        return f"Pla {self.nivell} - {self.usuari.username}"
 
 
 class TemplateExercici(models.Model):
@@ -245,6 +257,13 @@ class ObjectiuExercici(models.Model):
 class Exercici(models.Model):
     usuari = models.ForeignKey(
         Usuari, on_delete=models.CASCADE, related_name="exercicis"
+    )
+    pla = models.ForeignKey(
+        PlaEntrenament,
+        on_delete=models.CASCADE,
+        related_name="plans_entrenament",
+        null=True,
+        blank=True,
     )
     template = models.ForeignKey(
         "TemplateExercici",
