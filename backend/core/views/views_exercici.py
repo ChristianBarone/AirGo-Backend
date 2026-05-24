@@ -96,10 +96,24 @@ class ExerciciViewSet(viewsets.ModelViewSet):
     def finalitzar_exercici(self, request, pk=None):
         exercici = self.get_object()
 
+        avg_speed_kmh = request.data.get("avg_speed_kmh", 0)
+
+        if avg_speed_kmh and float(avg_speed_kmh) > 50:
+            exercici.completat = False
+            exercici.save()
+            return Response(
+                {
+                    "error": "Activitat no vàlida",
+                    "motiu": "S'ha detectat una velocitat mitjana superior a 50 km/h. Possible ús de vehicle de motor.",
+                    "valid_per_punts": False,
+                },
+                status=status.HTTP_200_OK,
+            )
+
         exercici.duration_seconds = request.data.get("duration_seconds")
         exercici.distance_meters = request.data.get("distance_meters")
         exercici.completat = request.data.get("completat")
-        exercici.avg_speed_kmh = request.data.get("avg_speed_kmh")
+        exercici.avg_speed_kmh = avg_speed_kmh
         exercici.save()
 
         medalla = calcular_medalla_obtinguda(exercici)
