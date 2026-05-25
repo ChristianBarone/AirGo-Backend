@@ -54,6 +54,7 @@ urlpatterns = [
         name="external-air-quality",
     ),
     path("bicing/", BicingView.as_view(), name="bicing"),
+    path("api/", include(router.urls)),
     path("api/usuaris/me/routes/save/", usuari_save_route, name="usuari-save-route"),
     path("api/usuaris/me/routes/", usuari_get_routes, name="usuari-get-routes"),
     path(
@@ -71,7 +72,6 @@ urlpatterns = [
         usuari_delete_route,
         name="usuari-delete-route",
     ),
-    path("api/", include(router.urls)),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
         "api/docs/",
