@@ -102,13 +102,12 @@ class ConversaViewSet(viewsets.GenericViewSet):
         if usuari not in (conversa.usuari_1, conversa.usuari_2):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        limit = int(request.query_params.get("limit", 50))
         before = request.query_params.get("before")
 
         qs = conversa.missatges.all()
         if before:
             qs = qs.filter(pk__lt=before)
-        missatges = qs.order_by("-enviat_at")[:limit]
+        missatges = qs.order_by("-enviat_at")
 
         serializer = MissatgeSerializer(reversed(list(missatges)), many=True)
         return Response(serializer.data)
