@@ -120,10 +120,14 @@ class ObjectiuSimpleSerializer(serializers.ModelSerializer):
 
 
 class ExerciciSerializer(serializers.ModelSerializer):
+    nom_pla = serializers.SerializerMethodField()
+
     class Meta:
         model = Exercici
         fields = [
             "id",
+            "pla",
+            "nom_pla",
             "template",
             "objectius",
             "medalla_obtinguda",
@@ -138,6 +142,11 @@ class ExerciciSerializer(serializers.ModelSerializer):
             "sensacio",
             "comentari",
         ]
+
+    def get_nom_pla(self, instance):
+        if instance.pla:
+            return {"nom": instance.pla.nom}
+        return None
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -191,6 +200,7 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
         model = PlaEntrenament
         fields = [
             "id",
+            "nom",
             "diesDurada",
             "numEntrenamentsSetmanals",
             "esport",

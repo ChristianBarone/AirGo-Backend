@@ -19,18 +19,25 @@ class PlaEntrenamentViewSet(viewsets.ModelViewSet):
         return Usuari.objects.get(google_id=google_id)
 
     @extend_schema(
-        summary="Crear un nou pla d'entrenament complet",
-        description="Envia els detalls del pla. El backend calcularà la data de fi i generarà els exercicis automàticament.",
+        summary="Crear un nou pla d'entrenament",
+        request=inline_serializer(
+            name="PlaCreateRequest",
+            fields={
+                "nom": serializers.CharField(default="El meu pla"),
+                "esport": serializers.ChoiceField(choices=["CAM", "BIC"]),
+                "nivell": serializers.IntegerField(),
+                "diesSetmana": serializers.ListField(child=serializers.IntegerField()),
+                "diesDurada": serializers.IntegerField(),
+                "is_initial": serializers.BooleanField(default=False),
+            },
+        ),
         responses={
             201: inline_serializer(
                 name="PlaCreateDetailedResponse",
                 fields={
                     "status": serializers.CharField(),
-                    "message": serializers.CharField(),
                     "plan": PlaEntrenamentSerializer(),
-                    "exercicis": ExerciciSerializer(
-                        many=True
-                    ),  # <--- Això farà que surtin a l'exemple!
+                    "exercicis": ExerciciSerializer(many=True),
                     "num_exercicis_creats": serializers.IntegerField(),
                 },
             )

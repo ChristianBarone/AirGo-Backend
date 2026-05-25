@@ -209,6 +209,7 @@ class PlaEntrenament(models.Model):
         null=True,
         blank=True,
     )
+    nom = models.CharField(max_length=100, default="")
     diesDurada = models.IntegerField(default=7)
     numEntrenamentsSetmanals = models.IntegerField(default=0)
     esport = models.CharField(
