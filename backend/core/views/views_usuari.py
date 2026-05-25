@@ -832,31 +832,23 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 {"error": "No s'han trobat dades per aquesta adreça."}, status=404
             )
 
-        guanya_insignia = False
         badge_data = None
-        missatge = f"L'edifici de {adreca} té una puntuació de {puntuacio}/10. "
 
         if puntuacio >= 7:
             ins = Insignia.objects.filter(tipus="EDIFICI").first()
 
             if ins:
-                guanya_insignia = True
-                UsuariInsignia.objects.get_or_create(usuari=usuari, insignia=ins)
-                missatge += "Felicitats! Has guanyat la insígnia d'edifici sostenible."
+                usuari_insignia, _ = UsuariInsignia.objects.get_or_create(
+                    usuari=usuari, insignia=ins
+                )
                 badge_data = InsigniaSerializer(ins).data
-            else:
-                missatge += "Puntuació excel·lent, però la insígnia encara no està disponible al sistema."
-        else:
-            missatge += (
-                "La puntuació no és prou alta per rebre la insígnia (mínim 7/10)."
-            )
 
         return Response(
             {
-                "puntuacio": puntuacio,
-                "insignia_guanyada": guanya_insignia,
-                "missatge": missatge,
                 "badge": badge_data,
+                "data_guanyada": (
+                    int(usuari_insignia.data_guanyada.timestamp()) if badge_data else 0
+                ),
             }
         )
 
