@@ -93,6 +93,11 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"], url_path="finalitzar-exercici")
     def finalitzar_exercici(self, request, pk=None):
+        """
+            Solo actualiza: duration_seconds , distance_meters, completat i avg_speed_kmh.
+            Para actualizar sensacio i comentari hacer POST api/exercicis/
+
+        """
         exercici = self.get_object()
 
         exercici.duration_seconds = request.data.get("duration_seconds")

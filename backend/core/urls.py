@@ -17,6 +17,7 @@ from core.views.views_exercici import ExerciciViewSet
 from core.views.views_exercici import TemplateExerciciViewSet
 from core.views.views_chat import ConversaViewSet
 from core.views.views_forum import ForumViewSet, UsuariForumsFavoritsView
+from core.views.views_missions_permanents import MissionsViewSet
 
 router = DefaultRouter()
 router.register(r"routes", RouteViewSet)
@@ -27,6 +28,7 @@ router.register(r"exercicis", ExerciciViewSet, basename="exercici")
 router.register(r"template-exercici", TemplateExerciciViewSet)
 router.register(r"conversations", ConversaViewSet, basename="conversa")
 router.register(r"forums", ForumViewSet, basename="forum")
+router.register(r'missions', MissionsViewSet, basename='missions')
 
 urlpatterns = [
     path("admin/", admin.site.urls),

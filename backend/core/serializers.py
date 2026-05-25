@@ -17,6 +17,8 @@ from .models import (
     UsuariInsignia,
     PuntLog,
     ObjectiuExercici,
+    MissioPermanent,
+    MissioUsuari
 )
 import os
 
@@ -170,6 +172,18 @@ class PlaEntrenamentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaEntrenament
         fields = ["id", "diesDurada", "numEntrenamentsSetmanals", "templates"]
+
+class MissioPermanentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MissioPermanent
+        fields = ['id', 'nom', 'descripcio', 'recompensa', 'metrica', 'fase_metrica', 'valor_objectiu']
+
+class MissioUsuariSerializer(serializers.ModelSerializer):
+    missio = MissioPermanentSerializer(read_only=True)
+
+    class Meta:
+        model = MissioUsuari
+        fields = ['id', 'missio', 'completada']
 
 
 class UsuariRutaSerializer(serializers.ModelSerializer):

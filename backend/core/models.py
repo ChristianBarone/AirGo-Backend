@@ -35,6 +35,16 @@ class SensacioExercici(models.IntegerChoices):
     BE = 4, "Be"
     MOLT_BE = 5, "Molt Be"
 
+class TipusMetrica(models.TextChoices):
+    DISTANCIA_CAMINAR = "DIST_CAM", "Distancia total caminar (km)"
+    DISTANCIA_BICI = "DIST_BIC", "Distancia total bici (km)"
+    TOTAL_EXERCICIS = "TOTAL_EXE", "Nombre d'exercicis totals"
+    MEDALLES_PLATA_OR = "MED_PLA_OR", "Nombre de medalles de plata o superior"
+    MEDALLES_OR = "MED_OR", "Nombre de medalles d'or"
+    MAX_DISTANCIA_UNICA_CAMINAR = "MAX_DIST_CAM", "Màxima distància d'una ruta caminant (km)"
+    MAX_DISTANCIA_UNICA_BICI = "MAX_DIST_BIC", "Màxima distància d'una ruta en bici (km)"
+    MAX_TEMPS_TRACKING = "MAX_TEMPS", "Màxim temps d'una ruta (h)"
+
 
 class Usuari(models.Model):
     google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
@@ -375,3 +385,26 @@ class PuntLog(models.Model):
     quantitat = models.IntegerField()
     motiu = models.CharField(max_length=255)
     data = models.DateTimeField(auto_now_add=True)
+
+class MissioPermanent(models.Model):
+    nom = models.CharField(max_length=100)
+    descripcio = models.TextField(blank=True)
+    recompensa = models.IntegerField(default=0)
+    metrica = models.CharField(max_length=15, choices=TipusMetrica.choices)
+    fase_metrica = models.IntegerField(default=1)
+    valor_objectiu = models.FloatField()
+
+    def __str__(self):
+        return f"{self.nom} ({self.metrica}) -> {self.valor_objectiu}"
+
+class MissioUsuari(models.Model):
+    usuari = models.ForeignKey(
+        Usuari, on_delete=models.CASCADE, related_name="missions_usuari"
+    )
+    missio = models.ForeignKey(
+        MissioPermanent, on_delete=models.CASCADE, related_name="missions_usuari"
+    )
+    completada = models.BooleanField(default=False)
+
+
+
