@@ -1,6 +1,6 @@
 from django.db.models import Sum
 from datetime import date
-from ..models import UsuariInsignia, Insignia, PuntLog, Exercici
+from ..models import UsuariInsignia, Insignia, PuntLog, Exercici, Titol, UsuariTitol
 
 
 def gestionar_puntuacio_i_insignies(usuari, exercici=None):
@@ -33,7 +33,13 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     fita_actual = usuari.punts // 100  # Exemple: 250 punts // 100 = 2
     if fita_actual > usuari.ultim_milestone_titols:
         diferencia = fita_actual - usuari.ultim_milestone_titols
-        usuari.titols_pendents += diferencia
+        total_titols_sistema = Titol.objects.count()
+        titols_ja_desbloquejats = UsuariTitol.objects.filter(usuari=usuari).count()
+        disponibles = total_titols_sistema - (
+            titols_ja_desbloquejats + usuari.titols_pendents
+        )
+        usuari.titols_pendents += max(0, min(diferencia, disponibles))
+
         usuari.ultim_milestone_titols = fita_actual
 
     usuari.save()
