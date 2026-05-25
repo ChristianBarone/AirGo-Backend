@@ -8,6 +8,8 @@ def gestionar_puntuacio_i_insignies(usuari, exercici=None):
     avui = date.today()
     usuari.refresh_from_db()
 
+    distancia_km = 0.0
+
     usuari.verificar_i_resetejar_ratxa()
 
     if usuari.ultima_activitat != avui:

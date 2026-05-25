@@ -851,3 +851,83 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 "badge": badge_data,
             }
         )
+
+    @extend_schema(
+        tags=["Serveis Externs"],
+        summary="Atorgar insígnia d'edifici",
+        description="Si la puntuació de l'edifici és >= 7, es donen 100 punts i la insígnia.",
+        request=inline_serializer(
+            name="GrantBuildingBadgeRequest",
+            fields={
+                "puntuacio": serializers.IntegerField(
+                    help_text="Puntuació obtinguda pel front-end (0-10)"
+                ),
+            },
+        ),
+        responses={
+            200: inline_serializer(
+                name="GrantBuildingBadgeResponse",
+                fields={
+                    "insignia_guanyada": serializers.BooleanField(),
+                    "missatge": serializers.CharField(),
+                    "badge": InsigniaSerializer(allow_null=True),
+                    "punts_totals": serializers.IntegerField(),
+                    "titols_pendents": serializers.IntegerField(),
+                },
+            ),
+        },
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="me/edifici-insignia",
+        permission_classes=[IsAuthenticated],
+    )
+    def otorgar_insignia_edifici(self, request):
+        from ..models import Insignia, UsuariInsignia, PuntLog
+
+        usuari = self._get_usuari_from_token(request)
+
+        try:
+            puntuacio = int(request.data.get("puntuacio", -1))
+        except (ValueError, TypeError):
+            return Response(
+                {"error": "La puntuació ha de ser un número vàlid."}, status=400
+            )
+
+        guanya_insignia = False
+        badge_data = None
+        missatge = f"L'edifici té una puntuació de {puntuacio}/10. "
+
+        if puntuacio >= 7:
+            punts_bonus = 100
+            usuari.punts += punts_bonus
+            usuari.save()
+            PuntLog.objects.create(
+                usuari=usuari, quantitat=punts_bonus, motiu="Edifici Sostenible"
+            )
+
+            gestionar_puntuacio_i_insignies(usuari)
+
+            ins = Insignia.objects.filter(tipus="EDIFICI").first()
+            if ins:
+                guanya_insignia = True
+                UsuariInsignia.objects.get_or_create(usuari=usuari, insignia=ins)
+                missatge += "Felicitats! Has guanyat 100 punts i la insígnia d'edifici sostenible."
+                badge_data = InsigniaSerializer(ins).data
+            else:
+                missatge += "Puntuació excel·lent (100 punts sumats), però la insígnia no està configurada a l'Admin."
+        else:
+            missatge += (
+                "La puntuació no és prou alta per rebre la insígnia (mínim 7/10)."
+            )
+
+        return Response(
+            {
+                "insignia_guanyada": guanya_insignia,
+                "missatge": missatge,
+                "badge": badge_data,
+                "punts_totals": usuari.punts,
+                "titols_pendents": usuari.titols_pendents,
+            }
+        )
