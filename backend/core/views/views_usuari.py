@@ -13,14 +13,23 @@ from drf_spectacular.utils import (
 )
 from drf_spectacular.types import OpenApiTypes
 
-from ..models import Usuari, UsuariTitol, UsuariRuta, Amistat, EstatAmistat, Titol, PlaEntrenament
+from ..models import (
+    Usuari,
+    UsuariTitol,
+    UsuariRuta,
+    Amistat,
+    EstatAmistat,
+    Titol,
+    PlaEntrenament,
+)
 from ..serializers import (
     UsuariSerializer,
     UsuariTitolSerializer,
     UsuariRutaSerializer,
     AmistatSerializer,
     UsuariInsigniaSerializer,
-    PuntLogSerializer, PlaEntrenamentSerializer,
+    PuntLogSerializer,
+    PlaEntrenamentSerializer,
 )
 from django.db import models as django_models
 
@@ -735,22 +744,29 @@ class UsuariViewSet(viewsets.ModelViewSet):
     @extend_schema(
         tags=["Usuaris · Me"],
         summary="Llistar els meus plans d'entrenament amb el seu calendari",
-        responses={200: PlaEntrenamentSerializer(many=True)}
+        responses={200: PlaEntrenamentSerializer(many=True)},
     )
-    @action(detail=False, methods=["get"], url_path="me/plans-entrenament", permission_classes=[IsAuthenticated])
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="me/plans-entrenament",
+        permission_classes=[IsAuthenticated],
+    )
     def get_my_plans(self, request):
         from ..serializers import ExerciciSerializer
 
         usuari = self._get_usuari_from_token(request)
-        plans = PlaEntrenament.objects.filter(usuari=usuari).order_by('-dataInici')
+        plans = PlaEntrenament.objects.filter(usuari=usuari).order_by("-dataInici")
 
         resultat = []
         for pla in plans:
             plan_data = PlaEntrenamentSerializer(pla).data
 
-            exercicis = pla.plans_entrenament.filter(template__isnull=False).order_by('dataInici')
+            exercicis = pla.plans_entrenament.filter(template__isnull=False).order_by(
+                "dataInici"
+            )
 
-            plan_data['exercicis'] = ExerciciSerializer(exercicis, many=True).data
+            plan_data["exercicis"] = ExerciciSerializer(exercicis, many=True).data
             resultat.append(plan_data)
 
         return Response(resultat)

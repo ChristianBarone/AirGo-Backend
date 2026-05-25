@@ -12,7 +12,7 @@ def create_plan_logic(usuari, pla):
         return [0, 1, 2, 3, 4, 5, 6]
     sessions_reals = min(num_sessions_setmana, len(disponibilitat))
     pas = len(disponibilitat) / sessions_reals
-    dies_triats = [disponibilitat[int(i * pas)]for i in range(sessions_reals)]
+    dies_triats = [disponibilitat[int(i * pas)] for i in range(sessions_reals)]
     pla.diesSetmana = dies_triats
     pla.numEntrenamentsSetmanals = sessions_reals
     pla.dataFi = pla.dataInici + timedelta(days=pla.diesDurada)

@@ -28,7 +28,6 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
         noves_insignies = gestionar_puntuacio_i_insignies(usuari, exercici=exercici)
 
-
         return {
             "medalla": medalla,
             "airCoins_guanyats": airCoins,
@@ -92,7 +91,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         ja_completat = instance.completat
 
-        response = super().update(request, *args, **kwargs)
+        super().update(request, *args, **kwargs)
         instance.refresh_from_db()
 
         dades_exercici = self.get_serializer(instance).data
