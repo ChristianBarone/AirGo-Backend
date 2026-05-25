@@ -30,6 +30,7 @@ from ..serializers import (
     UsuariInsigniaSerializer,
     PuntLogSerializer,
     PlaEntrenamentSerializer,
+    InsigniaSerializer,
 )
 from django.db import models as django_models
 
@@ -770,3 +771,83 @@ class UsuariViewSet(viewsets.ModelViewSet):
             resultat.append(plan_data)
 
         return Response(resultat)
+
+    @extend_schema(
+        tags=["Serveis Externs"],
+        summary="Consultar eficiència d'edifici i guanyar insígnia",
+        description="Cridada al servei extern de WattsApp per obtenir la puntuació d'eficiència energètica d'un edifici.",
+        request=inline_serializer(
+            name="CheckBuildingRequest",
+            fields={
+                "municipi": serializers.CharField(help_text="Ex: Barcelona"),
+                "adreca": serializers.CharField(help_text="Ex: Carrer de Balmes"),
+                "numero": serializers.CharField(help_text="Ex: 10"),
+            },
+        ),
+        responses={
+            200: inline_serializer(
+                name="CheckBuildingResponse",
+                fields={
+                    "puntuacio": serializers.IntegerField(
+                        help_text="Puntuació de 0 a 10 (o -1 si no hi ha dades)"
+                    ),
+                    "insignia_guanyada": serializers.BooleanField(),
+                    "missatge": serializers.CharField(),
+                    "badge": InsigniaSerializer(allow_null=True),
+                },
+            ),
+            404: OpenApiResponse(
+                description="No s'han trobat dades per aquesta adreça."
+            ),
+        },
+    )
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="me/comprovar-edifici",
+        permission_classes=[IsAuthenticated],
+    )
+    def comprovar_edifici(self, request):
+        from ..services.puntuacio_edifici import consultar_puntuacio_edifici
+        from ..models import Insignia, UsuariInsignia
+
+        usuari = self._get_usuari_from_token(request)
+
+        municipi = request.data.get("municipi")
+        adreca = request.data.get("adreca")
+        numero = request.data.get("numero")
+
+        puntuacio = consultar_puntuacio_edifici(municipi, adreca, numero)
+
+        if puntuacio == -1:
+            return Response(
+                {"error": "No s'han trobat dades per aquesta adreça."}, status=404
+            )
+
+        guanya_insignia = False
+        badge_data = None
+        missatge = f"L'edifici de {adreca} té una puntuació de {puntuacio}/10. "
+
+        if puntuacio >= 7:
+            ins = Insignia.objects.filter(tipus="EDIFICI").first()
+
+            if ins:
+                guanya_insignia = True
+                UsuariInsignia.objects.get_or_create(usuari=usuari, insignia=ins)
+                missatge += "Felicitats! Has guanyat la insígnia d'edifici sostenible."
+                badge_data = InsigniaSerializer(ins).data
+            else:
+                missatge += "Puntuació excel·lent, però la insígnia encara no està disponible al sistema."
+        else:
+            missatge += (
+                "La puntuació no és prou alta per rebre la insígnia (mínim 7/10)."
+            )
+
+        return Response(
+            {
+                "puntuacio": puntuacio,
+                "insignia_guanyada": guanya_insignia,
+                "missatge": missatge,
+                "badge": badge_data,
+            }
+        )
