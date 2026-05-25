@@ -895,7 +895,6 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 {"error": "La puntuació ha de ser un número vàlid."}, status=400
             )
 
-        guanya_insignia = False
         badge_data = None
         missatge = f"L'edifici té una puntuació de {puntuacio}/10. "
 
@@ -911,8 +910,10 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
             ins = Insignia.objects.filter(tipus="EDIFICI").first()
             if ins:
-                guanya_insignia = True
-                UsuariInsignia.objects.get_or_create(usuari=usuari, insignia=ins)
+                rel, _ = UsuariInsignia.objects.get_or_create(
+                    usuari=usuari, insignia=ins
+                )
+                data_guanyada = rel.data_guanyada
                 missatge += "Felicitats! Has guanyat 100 punts i la insígnia d'edifici sostenible."
                 badge_data = InsigniaSerializer(ins).data
             else:
@@ -924,10 +925,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
 
         return Response(
             {
-                "insignia_guanyada": guanya_insignia,
-                "missatge": missatge,
                 "badge": badge_data,
-                "punts_totals": usuari.punts,
-                "titols_pendents": usuari.titols_pendents,
+                "data_guanyada": data_guanyada,
             }
         )
