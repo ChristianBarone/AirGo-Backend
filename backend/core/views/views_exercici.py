@@ -76,6 +76,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
                 name="ExerciciFinalitzatResponse",
                 fields={
                     "id": serializers.IntegerField(),
+                    "nom_pla": serializers.CharField(),
                     "medalla_obtinguda": serializers.CharField(),
                     "airCoins_guanyats": serializers.IntegerField(),
                     "points_earned_total": serializers.IntegerField(),
