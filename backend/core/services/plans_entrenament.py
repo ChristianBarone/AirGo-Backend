@@ -9,11 +9,10 @@ def create_plan_logic(usuari, pla):
     num_sessions_setmana = exercicis_per_setmana.get(pla.nivell, 2)
     disponibilitat = sorted(pla.diesSetmana)
     if not disponibilitat:
-        return [1, 2, 3, 4, 5, 6, 7]
+        return [0, 1, 2, 3, 4, 5, 6]
     sessions_reals = min(num_sessions_setmana, len(disponibilitat))
     pas = len(disponibilitat) / sessions_reals
-    dies_triats = [disponibilitat[int(i * pas)] - 1 for i in range(sessions_reals)]
-    dies_python = [(d - 1) % 7 for d in dies_triats]
+    dies_triats = [disponibilitat[int(i * pas)] for i in range(sessions_reals)]
     pla.diesSetmana = dies_triats
     pla.numEntrenamentsSetmanals = sessions_reals
     pla.dataFi = pla.dataInici + timedelta(days=pla.diesDurada)
@@ -37,7 +36,7 @@ def create_plan_logic(usuari, pla):
     for i in range(pla.diesDurada):
         data_actual = pla.dataInici + timedelta(days=i)
 
-        if data_actual.weekday() in dies_python:
+        if data_actual.weekday() in dies_triats:
             template = template_list[entrenaments_totals_comptador % len(template_list)]
             dt_aware = timezone.make_aware(
                 datetime.combine(data_actual, datetime.min.time())
@@ -69,7 +68,7 @@ def create_ini_plan(usuari, pla):
     pla.diesDurada = 14
     pla.nivell = 1
     if not pla.diesSetmana:
-        pla.diesSetmana = [1, 2, 3, 4, 5, 6, 7]
+        pla.diesSetmana = [0, 1, 2, 3, 4, 5, 6]
     pla.save()
     return create_plan_logic(usuari, pla)
 

@@ -28,16 +28,6 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
         noves_insignies = gestionar_puntuacio_i_insignies(usuari, exercici=exercici)
 
-        bonus_pla = 0
-        if exercici.pla:
-            pendents = exercici.pla.plans_entrenament.filter(completat=False).count()
-            if pendents == 0 and exercici.pla.actiu:
-                bonus_pla = 500
-                usuari.punts += bonus_pla
-                usuari.save()
-                exercici.pla.actiu = False
-                exercici.pla.save()
-
         return {
             "medalla": medalla,
             "airCoins_guanyats": airCoins,
@@ -45,7 +35,6 @@ class ExerciciViewSet(viewsets.ModelViewSet):
             "points_earned_total": usuari.punts,
             "current_streak": usuari.ratxa,
             "titols_pendents": usuari.titols_pendents,
-            "bonus_final_pla": bonus_pla,
         }
 
     def _get_usuari_from_token(self, request):
@@ -57,19 +46,18 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         usuari = self._get_usuari_from_token(self.request)
         return Exercici.objects.filter(usuari=usuari)
 
-    @extend_schema(summary="Crear ruta lliure o sessió de calendari")
+    @extend_schema(summary="Crear ruta lliure")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         usuari = self._get_usuari_from_token(request)
-        instance = serializer.save(usuari=usuari)
+        instance = serializer.save(usuari=usuari, template=None)
 
-        if not instance.pla:
-            from ..services.objectius_exercici import create_objectius
+        from ..services.objectius_exercici import create_objectius
 
-            objectius = create_objectius(usuari)
-            if objectius:
-                instance.objectius.set(objectius)
+        objectius = create_objectius(usuari)
+        if objectius:
+            instance.objectius.set(objectius)
 
         response_data = serializer.data
 
@@ -103,16 +91,17 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         ja_completat = instance.completat
 
-        response = super().update(request, *args, **kwargs)
+        super().update(request, *args, **kwargs)
+        instance.refresh_from_db()
+
+        dades_exercici = self.get_serializer(instance).data
 
         # Si l'exercici s'ha marcat com a completat en aquesta crida
         if request.data.get("completat") is True and not ja_completat:
             usuari = self._get_usuari_from_token(request)
-            instance.refresh_from_db()
             premis = self._aplicar_premis(instance, usuari)
-            response = self.get_serializer(instance).data
-            response.data.update(premis)
-        return response
+            dades_exercici.update(premis)
+        return Response(dades_exercici)
 
     @extend_schema(request=None, responses={200: ExerciciSerializer})
     @action(
