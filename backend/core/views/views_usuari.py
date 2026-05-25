@@ -838,12 +838,16 @@ class UsuariViewSet(viewsets.ModelViewSet):
             ins = Insignia.objects.filter(tipus="EDIFICI").first()
 
             if ins:
-                usuari_insignia, _ = UsuariInsignia.objects.get_or_create(usuari=usuari, insignia=ins)
+                usuari_insignia, _ = UsuariInsignia.objects.get_or_create(
+                    usuari=usuari, insignia=ins
+                )
                 badge_data = InsigniaSerializer(ins).data
 
         return Response(
             {
                 "badge": badge_data,
-                "data_guanyada": int(usuari_insignia.data_guanyada.timestamp()) if badge_data else 0,
+                "data_guanyada": (
+                    int(usuari_insignia.data_guanyada.timestamp()) if badge_data else 0
+                ),
             }
         )
