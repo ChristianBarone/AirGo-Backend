@@ -35,6 +35,7 @@ from ..serializers import (
 from django.db import models as django_models
 
 from ..services.gamificacio import gestionar_puntuacio_i_insignies
+from ..services.firebase import send_push_notification
 
 
 @extend_schema_view(
@@ -501,6 +502,13 @@ class UsuariViewSet(viewsets.ModelViewSet):
         if accio == "accept":
             amistat.estat = EstatAmistat.ACCEPTED
             amistat.save()
+            if amistat.solicitant.fcm_token:
+                send_push_notification(
+                    fcm_token=amistat.solicitant.fcm_token,
+                    title="Sol·licitud acceptada",
+                    body=f"{usuari.username} ha acceptat la teva sol·licitud d'amistat.",
+                    data={"type": "friend_accepted", "usuari_id": str(usuari.pk)},
+                )
             return Response({"message": "Amistat acceptada"})
         elif accio == "reject":
             amistat.delete()
