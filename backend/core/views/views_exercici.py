@@ -8,6 +8,7 @@ from ..serializers import ExerciciSerializer
 from ..models import TemplateExercici
 from ..serializers import TemplateExerciciSerializer
 from ..services.gamificacio import gestionar_puntuacio_i_insignies
+from ..services.missions_permanents import verificar_i_actualitzar_missions
 from ..services.objectius_exercici import (
     create_objectius,
     calcular_medalla_obtinguda,
@@ -111,6 +112,8 @@ class ExerciciViewSet(viewsets.ModelViewSet):
 
         exercici.medalla_obtinguda = medalla
         exercici.save()
+
+        verificar_i_actualitzar_missions(exercici.usuari)
 
         serializer = ExerciciSerializer(exercici)
         data = serializer.data
