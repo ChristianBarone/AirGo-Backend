@@ -1,6 +1,6 @@
 import requests
 
-URL_EXTERNA = "http://nginx:9999/api/servei/puntuacio-edifici/"
+URL_EXTERNA = "http://nattech.fib.upc.edu:40600/api/servei/puntuacio-edifici/"
 
 
 def consultar_puntuacio_edifici(municipi, adreca, numero):
