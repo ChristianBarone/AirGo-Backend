@@ -53,6 +53,19 @@ class ExerciciViewSet(viewsets.ModelViewSet):
         usuari = self._get_usuari_from_token(request)
         instance = serializer.save(usuari=usuari, template=None)
 
+        avg_speed = instance.avg_speed_kmh
+        if avg_speed and float(avg_speed) > 50:
+            instance.completat = False
+            instance.save()
+            return Response(
+                {
+                    "error": "Activitat no vàlida",
+                    "motiu": "S'ha detectat una velocitat mitjana superior a 50 km/h. Possible ús de vehicle de motor.",
+                    "valid_per_punts": False,
+                },
+                status=status.HTTP_200_OK,
+            )
+
         from ..services.objectius_exercici import create_objectius
 
         objectius = create_objectius(usuari)
