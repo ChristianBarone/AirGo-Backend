@@ -516,7 +516,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
                     fcm_token=amistat.solicitant.fcm_token,
                     title="Sol·licitud acceptada",
                     body=f"{usuari.username} ha acceptat la teva sol·licitud d'amistat.",
-                    data={"type": "friend_accepted", "usuari_id": str(usuari.pk)},
+                    data={"type": "friend_accepted", "usuari_id": str(usuari.pk), "usuari_username": usuari.username, "usuari_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else ""},
                 )
             return Response({"message": "Amistat acceptada"})
         elif accio == "reject":
