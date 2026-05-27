@@ -454,6 +454,15 @@ class UsuariViewSet(viewsets.ModelViewSet):
             )
 
         Amistat.objects.create(solicitant=usuari, receptor=receptor)
+
+        if receptor.fcm_token:
+            send_push_notification(
+                fcm_token=receptor.fcm_token,
+                title="Nova sol·licitud d'amistat",
+                body=f"{usuari.username} t'ha enviat una sol·licitud d'amistat.",
+                data={"type": "friend_request", "usuari_id": str(usuari.pk)},
+            )
+
         return Response(
             {"message": "Sol·licitud enviada"}, status=status.HTTP_201_CREATED
         )
