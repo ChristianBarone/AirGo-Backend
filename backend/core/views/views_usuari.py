@@ -453,14 +453,14 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_409_CONFLICT,
             )
 
-        Amistat.objects.create(solicitant=usuari, receptor=receptor)
+        amistat = Amistat.objects.create(solicitant=usuari, receptor=receptor)
 
         if receptor.fcm_token:
             send_push_notification(
                 fcm_token=receptor.fcm_token,
                 title="Nova sol·licitud d'amistat",
                 body=f"{usuari.username} t'ha enviat una sol·licitud d'amistat.",
-                data={"type": "friend_request", "usuari_id": str(usuari.pk)},
+                data={"type": "friend_request", "usuari_id": str(usuari.pk), "amistat_id": str(amistat.pk), "solicitant_username": usuari.username, "solicitant_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else "",},
             )
 
         return Response(
