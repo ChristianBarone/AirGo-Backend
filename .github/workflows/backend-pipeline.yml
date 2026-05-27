@@ -1,0 +1,93 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  CI:
+    name: Run Tests and Quality Checks
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: airgo_test
+          POSTGRES_USER: user_test
+          POSTGRES_PASSWORD: password_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install flake8
+
+      - name: Lint (Check syntax errors)
+        run: flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Check for missing migrations
+        env:
+          POSTGRES_DB: airgo_test
+          POSTGRES_USER: user_test
+          POSTGRES_PASSWORD: password_test
+          POSTGRES_HOST: localhost
+          SECRET_KEY: "test-key-ci"
+        run: |
+          cd backend
+          python manage.py makemigrations --check --dry-run
+
+      - name: Run Django Tests
+        env:
+          POSTGRES_DB: airgo_test
+          POSTGRES_USER: user_test
+          POSTGRES_PASSWORD: password_test
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          SECRET_KEY: "test-key-ci"
+          DEBUG: "True"
+          GOOGLE_CLIENT_ID: "test-id"
+        run: |
+          cd backend
+          python manage.py makemigrations
+          pytest --cov=core --cov-report=term
+  deploy:
+    name: Deploy to server
+    needs: CI
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    runs-on: self-hosted
+
+    steps:
+      - name: Pull latest changes
+        run: |
+          cd ~/airgo
+          git fetch origin
+          git checkout ${{ github.ref_name }}
+          git pull origin ${{ github.ref_name }}
+
+      - name: Restart Docker
+        run: |
+          cd ~/airgo
+          docker-compose down
+          docker-compose up -d --build
+
+      - name: Run Migrations
+        run: |
+          docker exec airgo_backend python manage.py migrate

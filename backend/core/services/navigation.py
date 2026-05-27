@@ -1,0 +1,83 @@
+import requests
+
+
+def get_eco_route(coords_list, stations, profile="eco_bike"):
+    """
+    Calcula una ruta ecològica evitant zones d'alta contaminació.
+
+    Args:
+        coords_list: Llista de punts [[lat, lon], [lat, lon], ...]
+        stations: Llista d'estacions de qualitat de l'aire
+        profile: "eco_bike", "eco_foot", o "running" (default: "eco_bike")
+    """
+    gh_url = "http://graphhopper:8989/route"
+
+    # Validar profile
+    valid_profiles = ["eco_bike", "eco_foot", "running"]
+    if profile not in valid_profiles:
+        return {"error": f"Perfil no vàlid. Usa: {', '.join(valid_profiles)}"}
+
+    stations = sorted(stations, key=lambda x: x["aqi"], reverse=True)[:5]
+
+    features_list = []
+    priority_rules = []
+
+    for i, station in enumerate(stations):
+        area_id = f"s{i}"
+        lat = station["geoPoint"]["lat"]
+        lon = station["geoPoint"]["lon"]
+        aqi = station["aqi"]
+
+        d = 0.004  # Radio de influencia
+        polygon_coords = [
+            [
+                [lon - d, lat - d],
+                [lon + d, lat - d],
+                [lon + d, lat + d],
+                [lon - d, lat + d],
+                [lon - d, lat - d],
+            ]
+        ]
+
+        # Construcción correcta del Feature GeoJSON
+        feature = {
+            "type": "Feature",
+            "id": area_id,
+            "geometry": {"type": "Polygon", "coordinates": polygon_coords},
+            "properties": {},
+        }
+        features_list.append(feature)
+
+        # Reglas de prioridad (usando números, no strings)
+        if aqi > 150:
+            factor = 0.2  # Evita-ho quasi sempre
+        elif aqi > 100:
+            factor = 0.5  # Evita-ho si no és una volta molt gran
+        elif aqi > 50:
+            factor = 0.8  # Penalització lleu
+        else:
+            factor = 1.0  # Aire net, cap penalització
+
+        priority_rules.append({"if": f"in_{area_id}", "multiply_by": str(factor)})
+
+    payload = {
+        "points": [[c[1], c[0]] for c in coords_list],
+        "profile": profile,
+        "ch.disable": True,
+        "points_encoded": False,
+        "details": ["time", "distance"],
+        "custom_model": {
+            "priority": priority_rules,
+            "areas": {"type": "FeatureCollection", "features": features_list},
+        },
+    }
+
+    try:
+        response = requests.post(gh_url, json=payload)
+        # Si GraphHopper dona un error 400 (ex: ruta fora del mapa, error de sintaxi)
+        if response.status_code != 200:
+            return {"error": f"Error de GraphHopper: {response.text}"}
+
+        return response.json()
+    except Exception as e:
+        return {"error": f"Error de connexió amb GraphHopper: {str(e)}"}

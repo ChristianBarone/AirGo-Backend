@@ -1,0 +1,13 @@
+{
+  "speed": [
+    { "if": "road_class == FOOTWAY || road_class == PEDESTRIAN", "limit_to": "5" },
+    { "else_if": "road_class == RESIDENTIAL", "limit_to": "4.5" },
+    { "else": "", "limit_to": "4" }
+  ],
+  "priority": [
+    { "if": "road_class == FOOTWAY || road_class == PEDESTRIAN", "multiply_by": "2.5" },
+    { "else_if": "surface == GRASS || surface == DIRT", "multiply_by": "2.0" },
+    { "else_if": "road_class == MOTORWAY || road_class == TRUNK", "multiply_by": "0.1" },
+    { "else": "", "multiply_by": "1.0" }
+  ]
+}
