@@ -63,7 +63,7 @@ class ExerciciViewSet(viewsets.ModelViewSet):
                     "motiu": "S'ha detectat una velocitat mitjana superior a 50 km/h. Possible ús de vehicle de motor.",
                     "valid_per_punts": False,
                 },
-                status=status.HTTP_200_OK,
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
             )
 
         from ..services.objectius_exercici import create_objectius
