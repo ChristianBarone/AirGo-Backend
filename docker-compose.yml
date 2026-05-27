@@ -28,6 +28,11 @@ services:
       - db
     expose:
       - "8080"
+    volumes:
+      - ./backend/core/migrations:/app/core/migrations
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./backend/firebase-credentials.json:/app/firebase-credentials.json
     networks:
       - airgo_net
 
@@ -41,11 +46,38 @@ services:
       - "8080:80"
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media:ro
+    networks:
+      - airgo_net
+
+  graphhopper:
+    image: israelhikingmap/graphhopper:latest
+    container_name: airgo_graphhopper
+    restart: unless-stopped
+    environment:
+      - JAVA_OPTS=-Xmx2g -Xms512m
+    volumes:
+    - ./graphhopper/osm:/data
+    ports:
+      - "8989:8989"
+    networks:
+      - airgo_net
+    command: --input /data/cataluna-260317.osm.pbf --config /data/config.yml
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
     networks:
       - airgo_net
 
 volumes:
   postgres_data:
+  static_volume:
+  media_volume:
+
 
 networks:
   airgo_net:

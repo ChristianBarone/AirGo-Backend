@@ -1,0 +1,10 @@
+[flake8]
+max-line-length = 120
+per-file-ignores =
+    backend/config/asgi.py: E402
+    backend/config/settings.py: E266
+    backend/core/models.py: F401
+    backend/core/services/plans_entrenament.py: F401, F841
+    backend/core/urls.py: F811
+    backend/core/views/views_exercici.py: F401
+extend-ignore = E501
