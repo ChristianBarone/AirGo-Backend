@@ -460,7 +460,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
                 fcm_token=receptor.fcm_token,
                 title="Nova sol·licitud d'amistat",
                 body=f"{usuari.username} t'ha enviat una sol·licitud d'amistat.",
-                data={"type": "friend_request", "usuari_id": str(usuari.pk), "amistat_id": str(amistat.pk), "solicitant_username": usuari.username, "solicitant_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else "",},
+                data={"type": "friend_request", "usuari_id": str(usuari.pk), "amistat_id": str(amistat.pk), "solicitant_username": usuari.username, "solicitant_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else "", "receiver_id": str(receptor.pk)},
             )
 
         return Response(
@@ -516,7 +516,7 @@ class UsuariViewSet(viewsets.ModelViewSet):
                     fcm_token=amistat.solicitant.fcm_token,
                     title="Sol·licitud acceptada",
                     body=f"{usuari.username} ha acceptat la teva sol·licitud d'amistat.",
-                    data={"type": "friend_accepted", "usuari_id": str(usuari.pk), "usuari_username": usuari.username, "usuari_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else ""},
+                    data={"type": "friend_accepted", "usuari_id": str(usuari.pk), "usuari_username": usuari.username, "usuari_profile_pic": str(usuari.profile_pic.url) if usuari.profile_pic else "", "receiver_id": str(amistat.solicitant.pk)},
                 )
             return Response({"message": "Amistat acceptada"})
         elif accio == "reject":
