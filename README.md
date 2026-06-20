@@ -1,6 +1,6 @@
 #  AirGo-Backend 🌍🏃‍♂️🚴‍♀️
 
-## 📝 Descripción general
+## 📝 El proyecto
 
 Actualmente, muchos ciudadanos de Barcelona hacen running o rutas a pie o en bicicleta, ya sea por diversión o como medio de transporte, para desarrollar un estilo de vida más saludable. No obstante, hacer deporte en esta ciudad no tiene un impacto tan positivo en la salud de las personas como se piensa. Aunque Barcelona ha mejorado la calidad del aire en los últimos años, la contaminación sigue muy presente en la vida cotidiana de todos. Por lo tanto, la constante exposición a partículas en suspensión implican un efecto negativo a largo plazo en la salud de la población barcelonesa. 😷
 
